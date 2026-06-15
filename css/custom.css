@@ -1,0 +1,246 @@
+/* =========================================================
+   PHP Défensif — slides custom theme
+   ========================================================= */
+
+.reveal {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #e8e8f0;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+}
+
+.reveal h1 { color: #e94560; }
+.reveal h2 { color: #f0a060; }
+.reveal h3 { color: #c0c0d0; }
+
+/* -------- Title slides -------- */
+.title-main {
+    font-size: 3.4em !important;
+    margin-bottom: 0.2em;
+    background: linear-gradient(120deg, #e94560 0%, #f0a060 50%, #ffd479 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent !important;
+}
+
+.title-sub {
+    color: #b0b0c0 !important;
+    font-weight: 400 !important;
+    line-height: 1.4;
+    margin-bottom: 1.5em;
+}
+
+.title-meta {
+    color: #707080;
+    font-size: 0.7em;
+}
+
+/* -------- Section dividers -------- */
+.section-title {
+    color: #f0a060 !important;
+    text-transform: uppercase;
+    font-size: 0.9em !important;
+    letter-spacing: 0.3em;
+    margin-bottom: 0 !important;
+    opacity: 0.7;
+}
+
+.section-main {
+    font-size: 2.8em !important;
+    margin-top: 0.2em !important;
+    color: #e94560 !important;
+}
+
+.section-meta {
+    color: #909098;
+    font-style: italic;
+    font-size: 0.8em;
+}
+
+/* -------- Code blocks -------- */
+.reveal pre {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    width: 100%;
+    font-size: 0.5em;
+}
+
+.reveal pre code {
+    border-radius: 8px;
+    padding: 1em 1.2em;
+    line-height: 1.4;
+    max-height: none;
+}
+
+.reveal code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
+    color: #ffd479;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+.reveal pre code {
+    color: inherit;
+    background: transparent;
+    padding: 1em 1.2em;
+}
+
+/* -------- Two-column layout -------- */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5em;
+    margin-top: 0.5em;
+}
+
+.two-col > div {
+    text-align: left;
+}
+
+.two-col h3 {
+    font-size: 0.9em;
+    margin-bottom: 0.3em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.two-col pre {
+    margin: 0;
+}
+
+.bad { color: #e94560 !important; }
+.good { color: #4ecca3 !important; }
+
+/* -------- Lists -------- */
+.reveal ul, .reveal ol {
+    display: block;
+    margin: 1em 0 1em 1.5em;
+}
+
+.reveal li {
+    margin: 0.5em 0;
+    line-height: 1.5;
+}
+
+.agenda {
+    font-size: 0.85em;
+}
+
+.agenda li {
+    margin: 0.3em 0;
+}
+
+/* -------- Quotes -------- */
+.quote-block {
+    font-style: italic;
+    color: #c0c0d0;
+    border-left: 4px solid #f0a060;
+    padding-left: 1em;
+    margin: 1em auto;
+    max-width: 90%;
+    line-height: 1.5;
+}
+
+.quote-attrib {
+    color: #909098;
+    font-style: italic;
+    margin-top: 1em;
+}
+
+/* -------- Tables -------- */
+.cost-table {
+    margin: 1em auto;
+    border-collapse: collapse;
+    font-size: 0.8em;
+}
+
+.cost-table th,
+.cost-table td {
+    padding: 0.4em 1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.cost-table th {
+    color: #f0a060;
+    background: rgba(240, 160, 96, 0.1);
+    text-transform: uppercase;
+    font-size: 0.8em;
+    letter-spacing: 0.1em;
+}
+
+.cost-table tr:last-child td {
+    color: #e94560;
+    font-weight: 700;
+}
+
+/* -------- Misc -------- */
+.big-text {
+    font-size: 1.5em;
+    margin: 0.5em 0;
+    font-weight: 600;
+}
+
+.small-text {
+    font-size: 0.7em;
+    color: #909098;
+    margin-top: 1em;
+}
+
+/* -------- Progress bar -------- */
+.reveal .progress {
+    color: #f0a060;
+    height: 4px;
+}
+
+/* -------- Slide number -------- */
+.reveal .slide-number {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #f0a060;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+}
+
+/* -------- Controls -------- */
+.reveal .controls {
+    color: #f0a060;
+}
+
+/* -------- Print / PDF -------- */
+@media print {
+    .reveal pre {
+        box-shadow: none;
+    }
+}
+
+/* -------- Anchor links -------- */
+.reveal a {
+    color: #ffd479;
+    text-decoration: none;
+    border-bottom: 1px dotted #ffd479;
+}
+
+.reveal a:hover {
+    color: #fff;
+    border-bottom-style: solid;
+}
+
+/* -------- Strong emphasis -------- */
+.reveal strong {
+    color: #ffd479;
+}
+
+.reveal em {
+    color: #4ecca3;
+    font-style: italic;
+}
