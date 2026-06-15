@@ -1,10 +1,10 @@
 /* =========================================================
-   PHP Défensif — slides custom theme
+   PHP Défensif — slides custom theme (light)
    ========================================================= */
 
 .reveal {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #e8e8f0;
+    color: #1f2937;
 }
 
 .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
@@ -14,15 +14,15 @@
     font-weight: 700;
 }
 
-.reveal h1 { color: #e94560; }
-.reveal h2 { color: #f0a060; }
-.reveal h3 { color: #c0c0d0; }
+.reveal h1 { color: #b91c1c; }
+.reveal h2 { color: #c2410c; }
+.reveal h3 { color: #475569; }
 
 /* -------- Title slides -------- */
 .title-main {
     font-size: 3.4em !important;
     margin-bottom: 0.2em;
-    background: linear-gradient(120deg, #e94560 0%, #f0a060 50%, #ffd479 100%);
+    background: linear-gradient(120deg, #b91c1c 0%, #c2410c 50%, #b45309 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -30,45 +30,74 @@
 }
 
 .title-sub {
-    color: #b0b0c0 !important;
+    color: #475569 !important;
     font-weight: 400 !important;
     line-height: 1.4;
     margin-bottom: 1.5em;
+    font-style: italic;
+}
+
+.title-sub:has(+ .title-attrib) {
+    margin-bottom: 0.4em !important;
+}
+
+.title-attrib {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 0.7em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: right;
+    padding-right: 2.5em;
+    margin-bottom: 2em;
+    opacity: 0.85;
+}
+
+.title-attrib::before {
+    content: '';
+    display: inline-block;
+    width: 2em;
+    height: 1px;
+    background: currentColor;
+    vertical-align: middle;
+    margin-right: 0.8em;
+    opacity: 0.6;
 }
 
 .title-meta {
-    color: #707080;
+    color: #6b7280;
     font-size: 0.7em;
 }
 
 /* -------- Section dividers -------- */
 .section-title {
-    color: #f0a060 !important;
+    color: #c2410c !important;
     text-transform: uppercase;
     font-size: 0.9em !important;
     letter-spacing: 0.3em;
     margin-bottom: 0 !important;
-    opacity: 0.7;
+    opacity: 0.85;
 }
 
 .section-main {
     font-size: 2.8em !important;
     margin-top: 0.2em !important;
-    color: #e94560 !important;
+    color: #b91c1c !important;
 }
 
 .section-meta {
-    color: #909098;
+    color: #6b7280;
     font-style: italic;
     font-size: 0.8em;
 }
 
 /* -------- Code blocks -------- */
 .reveal pre {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
     border-radius: 8px;
     width: 100%;
     font-size: 0.5em;
+    border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .reveal pre code {
@@ -76,12 +105,13 @@
     padding: 1em 1.2em;
     line-height: 1.4;
     max-height: none;
+    background: #f8fafc;
 }
 
 .reveal code {
     font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
-    color: #ffd479;
-    background-color: rgba(255, 255, 255, 0.05);
+    color: #b45309;
+    background-color: rgba(15, 23, 42, 0.06);
     padding: 0.1em 0.4em;
     border-radius: 4px;
     font-size: 0.95em;
@@ -89,7 +119,6 @@
 
 .reveal pre code {
     color: inherit;
-    background: transparent;
     padding: 1em 1.2em;
 }
 
@@ -116,8 +145,8 @@
     margin: 0;
 }
 
-.bad { color: #e94560 !important; }
-.good { color: #4ecca3 !important; }
+.bad { color: #b91c1c !important; }
+.good { color: #047857 !important; }
 
 /* -------- Lists -------- */
 .reveal ul, .reveal ol {
@@ -141,8 +170,8 @@
 /* -------- Quotes -------- */
 .quote-block {
     font-style: italic;
-    color: #c0c0d0;
-    border-left: 4px solid #f0a060;
+    color: #475569;
+    border-left: 4px solid #c2410c;
     padding-left: 1em;
     margin: 1em auto;
     max-width: 90%;
@@ -150,7 +179,7 @@
 }
 
 .quote-attrib {
-    color: #909098;
+    color: #6b7280;
     font-style: italic;
     margin-top: 1em;
 }
@@ -165,20 +194,20 @@
 .cost-table th,
 .cost-table td {
     padding: 0.4em 1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.12);
     text-align: left;
 }
 
 .cost-table th {
-    color: #f0a060;
-    background: rgba(240, 160, 96, 0.1);
+    color: #b45309;
+    background: rgba(194, 65, 12, 0.08);
     text-transform: uppercase;
     font-size: 0.8em;
     letter-spacing: 0.1em;
 }
 
 .cost-table tr:last-child td {
-    color: #e94560;
+    color: #b91c1c;
     font-weight: 700;
 }
 
@@ -191,20 +220,20 @@
 
 .small-text {
     font-size: 0.7em;
-    color: #909098;
+    color: #6b7280;
     margin-top: 1em;
 }
 
 /* -------- Progress bar -------- */
 .reveal .progress {
-    color: #f0a060;
+    color: #c2410c;
     height: 4px;
 }
 
 /* -------- Slide number -------- */
 .reveal .slide-number {
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #f0a060;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #b45309;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7em;
     padding: 0.3em 0.6em;
@@ -213,7 +242,7 @@
 
 /* -------- Controls -------- */
 .reveal .controls {
-    color: #f0a060;
+    color: #c2410c;
 }
 
 /* -------- Print / PDF -------- */
@@ -225,22 +254,22 @@
 
 /* -------- Anchor links -------- */
 .reveal a {
-    color: #ffd479;
+    color: #b45309;
     text-decoration: none;
-    border-bottom: 1px dotted #ffd479;
+    border-bottom: 1px dotted #b45309;
 }
 
 .reveal a:hover {
-    color: #fff;
+    color: #b91c1c;
     border-bottom-style: solid;
 }
 
 /* -------- Strong emphasis -------- */
 .reveal strong {
-    color: #ffd479;
+    color: #b45309;
 }
 
 .reveal em {
-    color: #4ecca3;
+    color: #047857;
     font-style: italic;
 }

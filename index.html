@@ -6,10 +6,10 @@
 
     <title>PHP Défensif — Programmation défensive avec PHP moderne</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css" id="theme">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="vendor/reveal.js/dist/reset.css">
+    <link rel="stylesheet" href="vendor/reveal.js/dist/reveal.css">
+    <link rel="stylesheet" href="vendor/reveal.js/dist/theme/white.css" id="theme">
+    <link rel="stylesheet" href="vendor/highlight.js/styles/github.css">
     <link rel="stylesheet" href="css/custom.css">
 </head>
 <body>
@@ -20,36 +20,32 @@
         <!-- SECTION 1 — INTRODUCTION                                     -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #1a1a2e, #16213e)">
+        <section data-background-gradient="linear-gradient(to bottom right, #f5f7fa, #e2e8f0)">
             <h1 class="title-main">PHP Défensif</h1>
-            <h3 class="title-sub">Programmer comme si la prochaine personne<br>qui lit votre code était un psychopathe<br>(et c'est vous, dans 6 mois)</h3>
+            <h3 class="title-sub">«&nbsp;L'expérience prouve que celui qui n'a jamais confiance en personne ne sera jamais déçu.&nbsp;»</h3>
+            <p class="title-attrib">— Léonard de Vinci</p>
             <p class="title-meta">
-                <small>Une présentation pour développeurs et développeuses PHP</small><br>
-                <small>De PHP 8.0 à PHP 8.5 — 2026</small>
+                <small>Thomas Dutrion - AFUP Paris - 16 juin 2026</small>
             </p>
-            <aside class="notes">
-                Bienvenue. Cette présentation dure 40 minutes. On va voir comment écrire du PHP qui résiste au temps, aux régressions, et aux ajouts précipités le vendredi soir à 17h59. On couvre toutes les versions de PHP 8.0 à PHP 8.5 (la version actuelle).
-            </aside>
         </section>
 
         <section>
             <h2>👋 Qui suis-je ?</h2>
             <ul>
-                <li class="fragment">Développeur·euse PHP depuis assez longtemps pour avoir vu <code>register_globals</code></li>
-                <li class="fragment">Assez jeune pour préférer <code>readonly</code> à <code>const</code></li>
-                <li class="fragment">Convaincu·e qu'un bon code est un code qu'on relit sans honte</li>
+                <li class="fragment">Thomas Dutrion</li>
+                <li class="fragment">Développeur PHP senior</li>
+                <li class="fragment">Passionné de code legacy</li>
+                <li class="fragment">Convaincu qu'un bon code n'existe pas</li>
             </ul>
         </section>
 
         <section>
             <h2>🎯 Pourquoi ce talk ?</h2>
-            <blockquote class="quote-block">
-                « Tout programme suffisamment complexe contient<br>
-                une réimplémentation buggée et lente<br>
-                d'une moitié du langage hôte. »
-            </blockquote>
-            <p class="fragment">— Greenspun's Tenth Rule (adaptée)</p>
-            <p class="fragment quote-attrib">On peut éviter ça. PHP moderne nous donne les outils.</p>
+            <ul>
+                <li class="fragment">Vous codez mal</li>
+                <li class="fragment">Je code mal</li>
+                <li class="fragment">On va au bar jusqu'à bien trop tard pour un soir de semaine</li>
+            </ul>
         </section>
 
         <section>
@@ -62,12 +58,11 @@
                 <li class="fragment">Nullabilité maîtrisée</li>
                 <li class="fragment">Encapsulation et property hooks</li>
                 <li class="fragment">Exceptions et résultats (+ <code>#[NoDiscard]</code> PHP 8.5)</li>
-                <li class="fragment">Composition fonctionnelle avec <code>|&gt;</code> (PHP 8.5)</li>
                 <li class="fragment">Outils et CI</li>
             </ol>
         </section>
 
-        <section data-background="#330000">
+        <section data-background="#fee2e2">
             <h2>⚠️ Avertissement</h2>
             <p class="fragment big-text">Il y aura du code.</p>
             <p class="fragment big-text">Beaucoup de code.</p>
@@ -79,7 +74,7 @@
         <!-- SECTION 2 — QU'EST-CE QUE LA PROGRAMMATION DÉFENSIVE ?       -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #003049, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #dbeafe, #eff6ff)">
             <h2 class="section-title">Partie 1</h2>
             <h1 class="section-main">La programmation défensive</h1>
             <p class="section-meta">…ou : comment dire « non » poliment à ses callers</p>
@@ -94,14 +89,24 @@
                 <li class="fragment">Échouer <strong>tôt</strong>, <strong>fort</strong>, et <strong>au bon endroit</strong></li>
                 <li class="fragment">Faire confiance au compilateur, pas aux humains</li>
             </ul>
-            <p class="fragment quote-attrib">« Make illegal states unrepresentable. » — Yaron Minsky</p>
         </section>
 
         <section>
-            <h2>Défensif ≠ paranoïaque</h2>
+            <h2>Le contrat</h2>
+            <p>Chaque fonction est un <strong>contrat</strong> :</p>
+            <ul>
+                <li class="fragment"><strong>Pré-conditions</strong> : ce que j'attends de mes arguments</li>
+                <li class="fragment"><strong>Post-conditions</strong> : ce que je garantis en retour</li>
+                <li class="fragment"><strong>Invariants</strong> : ce qui reste vrai du début à la fin</li>
+            </ul>
+            <p class="fragment">Plus on encode ce contrat dans les <em>types</em>, moins il faut le vérifier à l'exécution.</p>
+        </section>
+
+        <section>
+            <h2>Exemple de contrat typé</h2>
             <div class="two-col">
                 <div>
-                    <h3 class="bad">❌ Paranoïaque</h3>
+                    <h3 class="bad">❌ Sans</h3>
 <pre><code class="php" data-trim>
 function divide($a, $b) {
     if (!is_numeric($a)) {
@@ -121,7 +126,7 @@ function divide($a, $b) {
 </code></pre>
                 </div>
                 <div>
-                    <h3 class="good">✅ Défensif</h3>
+                    <h3 class="good">✅ Avec</h3>
 <pre><code class="php" data-trim>
 function divide(
     float $a,
@@ -136,17 +141,6 @@ function divide(
                 </div>
             </div>
             <p class="fragment">Le système de types fait 80 % du travail.</p>
-        </section>
-
-        <section>
-            <h2>Le contrat</h2>
-            <p>Chaque fonction est un <strong>contrat</strong> :</p>
-            <ul>
-                <li class="fragment"><strong>Pré-conditions</strong> : ce que j'attends de mes arguments</li>
-                <li class="fragment"><strong>Post-conditions</strong> : ce que je garantis en retour</li>
-                <li class="fragment"><strong>Invariants</strong> : ce qui reste vrai du début à la fin</li>
-            </ul>
-            <p class="fragment">Plus on encode ce contrat dans les <em>types</em>, moins il faut le vérifier à l'exécution.</p>
         </section>
 
         <section>
@@ -167,7 +161,7 @@ function divide(
                 <tr class="fragment"><td>En production (1h du matin)</td><td>1500×</td></tr>
                 </tbody>
             </table>
-            <p class="fragment small-text">Sources approximatives : NIST, IBM, votre équipe de garde.</p>
+            <p class="fragment small-text">Sources : tkt.</p>
         </section>
 
         <section>
@@ -206,7 +200,7 @@ public function setAge(int $age): void {
         <!-- SECTION 3 — LE SYSTÈME DE TYPES                              -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #1a3a52, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #cffafe, #ecfeff)">
             <h2 class="section-title">Partie 2</h2>
             <h1 class="section-main">Le système de types</h1>
             <p class="section-meta">Votre meilleur allié, gratuit, livré avec le langage</p>
@@ -214,7 +208,7 @@ public function setAge(int $age): void {
 
         <section>
             <h2><code>declare(strict_types=1);</code></h2>
-            <p>La ligne la plus rentable de votre <code>composer.json</code>.</p>
+            <p>La ligne la plus rentable de votre fichier.</p>
             <p class="fragment">Sans elle, PHP essaie d'être <em>poli</em> :</p>
 <pre class="fragment"><code class="php" data-trim>
 function add(int $a, int $b): int {
@@ -241,7 +235,7 @@ add("5", "10");
 //            string given
 </code></pre>
             <p class="fragment">À mettre <strong>en haut de chaque fichier</strong>. Sans exception.</p>
-            <p class="fragment small-text">Astuce : configurez votre IDE pour l'ajouter automatiquement.</p>
+            <p class="fragment small-text">Note : vos interfaces n'en ont pas besoin.</p>
         </section>
 
         <section>
@@ -419,6 +413,63 @@ class OrderService {
             <p class="fragment">Les contrôles deviennent <strong>des affirmations métier</strong>, pas des vérifs techniques.</p>
         </section>
 
+        <section style="font-size: 0.55em;">
+            <h2>Collection typée : <code>ArrayAccess</code> + splat</h2>
+            <div class="two-col">
+                <div>
+                    <h3>Construction</h3>
+<pre><code class="php" data-trim>
+final readonly class OrderItemCollection
+    implements ArrayAccess
+{
+    /** @var list&lt;OrderItem&gt; */
+    private array $items;
+
+    public function __construct(OrderItem ...$items)
+    {
+        $this->items = array_values($items);
+    }
+    // …suite →
+}
+
+// Le constructeur impose le type item par item
+$cart = new OrderItemCollection($item1, $item2);
+$cart = new OrderItemCollection(...$itemsFromDb);
+// ❌ ($item1, 'oops')  → TypeError immédiat
+</code></pre>
+                </div>
+                <div>
+                    <h3>Accès &amp; immutabilité</h3>
+<pre><code class="php" data-trim>
+public function offsetExists(mixed $offset): bool
+{
+    return isset($this->items[$offset]);
+}
+
+public function offsetGet(mixed $offset): OrderItem
+{
+    return $this->items[$offset]
+        ?? throw new OutOfBoundsException(
+            "Index inconnu : {$offset}"
+        );
+}
+
+public function offsetSet(mixed $o, mixed $v): never
+{
+    throw new BadMethodCallException('Immuable.');
+}
+
+public function offsetUnset(mixed $o): never
+{
+    throw new BadMethodCallException('Immuable.');
+}
+</code></pre>
+                </div>
+            </div>
+            <p class="fragment">Le splat <code>OrderItem ...$items</code> <strong>type chaque élément</strong> à l'entrée — un tableau hétérogène ne franchit jamais le constructeur.</p>
+            <p class="fragment"><code>readonly</code> + <code>never</code> sur <code>offsetSet</code>/<code>offsetUnset</code> rendent la collection <strong>immuable par construction</strong>.</p>
+        </section>
+
         <section>
             <h2>Récap section 2</h2>
             <ul>
@@ -431,11 +482,35 @@ class OrderService {
             </ul>
         </section>
 
+        <section style="font-size: 0.65em;">
+            <h2>⚠️ Limite de <code>strict_types</code> : les callbacks <em>core</em></h2>
+<pre><code class="php" data-trim>
+declare(strict_types=1);
+
+function double(int $x): int {
+    return $x * 2;
+}
+
+// ✅ Appel direct dans ce fichier — strict_types s'applique
+double("5");
+// TypeError: argument #1 ($x) must be of type int, string given
+
+// ❌ Appel via une fonction core — strict_types bypassé
+array_map('double', ['1', '2', '3']);
+// Aucune erreur. Résultat : [2, 4, 6]
+// `array_map` (moteur C) ré-appelle votre callback hors du
+// scope strict_types : les '1', '2', '3' sont coercés en int.
+</code></pre>
+            <p class="fragment"><code>strict_types=1</code> n'agit que sur les appels <strong>écrits dans votre fichier</strong>.</p>
+            <p class="fragment">Dès qu'une fonction interne (<code>array_map</code>, <code>array_filter</code>, <code>usort</code>, <code>preg_replace_callback</code>, <code>call_user_func</code>…) ré-invoque votre callback, la coercition silencieuse revient.</p>
+            <p class="fragment"><strong>Parade :</strong> valider la collection en amont (collection typée, splat, value objects), ou itérer avec un <code>foreach</code> dans votre fichier — là où <code>strict_types</code> s'applique.</p>
+        </section>
+
         <!-- ============================================================ -->
         <!-- SECTION 4 — IMMUTABILITÉ                                     -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #1d3557, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #c7d2fe, #e0e7ff)">
             <h2 class="section-title">Partie 3</h2>
             <h1 class="section-main">Immutabilité</h1>
             <p class="section-meta">L'art de ne <em>jamais</em> changer d'avis</p>
@@ -621,7 +696,7 @@ final readonly class ImmutableList {
             <p class="fragment">Pas de <code>$list[] = $x</code>. Toujours un <em>nouveau</em> objet.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.9em;">
             <h2>Récap section 3</h2>
             <ul>
                 <li class="fragment">✅ Promoted properties pour réduire le bruit</li>
@@ -637,7 +712,7 @@ final readonly class ImmutableList {
         <!-- SECTION 5 — VALUE OBJECTS                                    -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #2a4d3e, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #dcfce7, #f0fdf4)">
             <h2 class="section-title">Partie 4</h2>
             <h1 class="section-main">Value Objects</h1>
             <p class="section-meta">Le couteau suisse du domaine</p>
@@ -653,7 +728,7 @@ final readonly class ImmutableList {
                 <li class="fragment">Sans <em>id</em> propre</li>
                 <li class="fragment">Encapsule un comportement métier</li>
             </ul>
-            <p class="fragment quote-attrib">Exemples : Email, Money, UserId, Coordinate, DateRange…</p>
+            <p class="fragment quote-attrib">Exemples : Email, Money, UserId, Coordinate...</p>
         </section>
 
         <section>
@@ -742,6 +817,53 @@ final readonly class Money {
 </code></pre>
         </section>
 
+        <section style="font-size: 0.8em;">
+            <h2>… ou avec n'importe quoi d'autre</h2>
+            <p><code>Money</code> n'a rien de spécial. Le même pattern s'applique à <strong>toute contrainte métier</strong>.</p>
+<pre><code class="php" data-trim>
+final readonly class PositiveInteger {
+    public function __construct(public int $value) {
+        if ($value <= 0) {
+            throw new InvalidArgumentException(
+                "Doit être strictement positif, reçu : {$value}"
+            );
+        }
+    }
+
+    public function add(self $other): self {
+        return new self($this->value + $other->value);
+    }
+}
+
+// Impossible de construire un état invalide
+$qty = new PositiveInteger(5);    // ✅
+new PositiveInteger(0);           // ❌ InvalidArgumentException
+new PositiveInteger(-3);          // ❌ InvalidArgumentException
+
+// La signature porte la garantie — plus de check dans la fonction
+function reserveStock(PositiveInteger $qty): void { /* … */ }
+</code></pre>
+            <p class="fragment"><code>PositiveInteger</code>, <code>NonEmptyString</code>, <code>Percentage</code>, <code>Latitude</code>, <code>NonEmptyList</code>… autant de classes que de <strong>contraintes métier que vous craignez d'oublier</strong>.</p>
+            <p class="fragment">La règle vit <strong>dans le type</strong>, pas dans une checklist mentale ou des <code>assert</code> éparpillés.</p>
+        </section>
+
+        <section style="font-size: 0.65em;">
+            <h2>🤸 Object Calisthenics — Règle n°3</h2>
+            <div class="two-col" style="align-items: center;">
+                <div>
+                    <p style="font-size: 1.25em; margin-bottom: 0.8em;"><strong style="color: #c2410c;">« Wrap all primitives and Strings »</strong></p>
+                    <p>Un primitif qui porte une <strong>règle métier</strong> (un <code>int</code> qui doit rester positif, un <code>string</code> qui doit être un email…) devient une classe.</p>
+                    <p class="fragment">Tirée des <strong>9 règles de Jeff Bay</strong> (<em>ThoughtWorks Anthology</em>, 2008) — un entraînement, pas un dogme.</p>
+                    <p class="fragment small-text">Le parallèle sportif : une contrainte volontaire qu'on s'impose pour gagner en <em>force structurelle</em>.</p>
+                </div>
+                <div style="text-align: center;">
+                    <img src="assets/calisthenics.gif"
+                         alt="Calisthenics workout"
+                         style="max-width: 320px; width: 100%; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);">
+                </div>
+            </div>
+        </section>
+
         <section>
             <h2>Pourquoi <code>int</code> et pas <code>float</code> ?</h2>
 <pre><code class="php" data-trim>
@@ -809,7 +931,7 @@ process(OrderStatus::from('approved')); // ✅
             <p class="fragment">Sérialisation transparente, comparaison par identité.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.9em;">
             <h2>Comportement sur enums</h2>
 <pre><code class="php" data-trim>
 enum OrderStatus: string {
@@ -848,7 +970,7 @@ enum OrderStatus: string {
         <!-- SECTION 6 — NULLABILITÉ                                      -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #4a1d3a, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #fce7f3, #fdf2f8)">
             <h2 class="section-title">Partie 5</h2>
             <h1 class="section-main">Nullabilité maîtrisée</h1>
             <p class="section-meta">« The billion dollar mistake » — Tony Hoare, 2009</p>
@@ -901,6 +1023,44 @@ $total = $cart?->items?->reduce(...)?->total ?? 0;
 </code></pre>
             <p class="fragment">Trop de <code>?-></code> = vous avez un problème d'optionalité dans votre modèle.</p>
             <p class="fragment">Demandez-vous : ces objets <em>devraient-ils</em> être nullables ?</p>
+        </section>
+
+        <section style="font-size: 0.7em;">
+            <h2>Le piège déplié</h2>
+            <p><code>$total = $cart?->items?->reduce(...)?->total ?? 0;</code> est équivalent à :</p>
+            <div class="two-col" style="grid-template-columns: 1.1fr 1fr;">
+                <div>
+<pre><code class="php" data-trim>
+function totalOf(?Cart $cart): int {
+    if ($cart === null) {
+        return 0;
+    }
+    if ($cart->items === null) {
+        return 0;
+    }
+    $reduced = $cart->items->reduce(/* … */);
+    if ($reduced === null) {
+        return 0;
+    }
+    if ($reduced->total === null) {
+        return 0;
+    }
+    return $reduced->total;
+}
+</code></pre>
+                </div>
+                <div>
+                    <h3>5 chemins de sortie</h3>
+                    <ol style="font-size: 0.9em;">
+                        <li class="fragment"><code>$cart</code> est <code>null</code> → <code>0</code></li>
+                        <li class="fragment"><code>$cart-&gt;items</code> est <code>null</code> → <code>0</code></li>
+                        <li class="fragment"><code>reduce()</code> renvoie <code>null</code> → <code>0</code></li>
+                        <li class="fragment"><code>-&gt;total</code> est <code>null</code> → <code>0</code></li>
+                        <li class="fragment">Tout est défini → la vraie valeur</li>
+                    </ol>
+                    <p class="fragment small-text" style="margin-top: 1em;"><strong>4 entrées</strong> distinctes produisent la <strong>même sortie</strong> (<code>0</code>) — impossible de savoir <em>laquelle</em> a échoué en post-mortem.</p>
+                </div>
+            </div>
         </section>
 
         <section>
@@ -986,13 +1146,13 @@ $status = $validStatuses[$input]
         <!-- SECTION 7 — ENCAPSULATION                                    -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #3a2a52, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #e9d5ff, #faf5ff)">
             <h2 class="section-title">Partie 6</h2>
             <h1 class="section-main">Encapsulation</h1>
             <p class="section-meta">Tell, don't ask</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2><code>final</code> par défaut</h2>
 <pre><code class="php" data-trim>
 final class UserService {
@@ -1049,7 +1209,7 @@ echo $u->email; // alice@example.com
 </code></pre>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Property hooks : computed properties</h2>
 <pre><code class="php" data-trim>
 class Rectangle {
@@ -1072,7 +1232,7 @@ echo (new Rectangle(3, 4))->area; // 12
             <p class="fragment">Plus besoin de <code>getArea()</code> qui ne fait que calculer.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Named constructors</h2>
 <pre><code class="php" data-trim>
 final readonly class User {
@@ -1155,6 +1315,23 @@ $user->companyZip(); // l'objet sait répondre
             <p class="fragment">Et si <code>getCompany()</code> peut retourner null ? Et si <code>getAddress()</code> aussi ?</p>
         </section>
 
+        <section style="font-size: 0.65em;">
+            <h2>🤸 Object Calisthenics — Règle n°5</h2>
+            <div class="two-col" style="align-items: center;">
+                <div>
+                    <p style="font-size: 1.25em; margin-bottom: 0.8em;"><strong style="color: #c2410c;">« One Dot Per Line »</strong></p>
+                    <p>Une seule flèche <code>-&gt;</code> par expression — le calisthenic qui rend la <strong>Law of Demeter</strong> mécanique : si vous traversez deux objets, c'est qu'il manque une méthode quelque part.</p>
+                    <p class="fragment">Tirée des <strong>9 règles de Jeff Bay</strong> (<em>ThoughtWorks Anthology</em>, 2008) — même famille que la règle n°3 (<code>PositiveInteger</code>).</p>
+                    <p class="fragment small-text">La discipline du sportif : un mouvement à la fois, propre — pas de chaîne acrobatique qui masque les efforts intermédiaires.</p>
+                </div>
+                <div style="text-align: center;">
+                    <img src="assets/pull-up.gif"
+                         alt="Pull-up calisthenics"
+                         style="max-width: 320px; width: 100%; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);">
+                </div>
+            </div>
+        </section>
+
         <section>
             <h2>Récap section 6</h2>
             <ul>
@@ -1171,20 +1348,46 @@ $user->companyZip(); // l'objet sait répondre
         <!-- SECTION 8 — EXCEPTIONS                                       -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #52312a, #0a1929)">
+        <section data-background-gradient="linear-gradient(to bottom right, #fed7aa, #fff7ed)" style="font-size: 0.8em;">
             <h2 class="section-title">Partie 7</h2>
             <h1 class="section-main">Exceptions et résultats</h1>
             <p class="section-meta">Échouer avec élégance et précision</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Quand throw ?</h2>
             <ul>
-                <li class="fragment"><strong>Pré-condition violée</strong> → invariant cassé</li>
+                <li class="fragment"><strong>Pré-condition violée</strong> → invariant cassé (l'appelant a triché)</li>
                 <li class="fragment"><strong>État système incohérent</strong> → bug réel</li>
-                <li class="fragment"><strong>Opération impossible</strong> → ressource manquante</li>
+                <li class="fragment"><strong>Opération impossible</strong> → ressource attendue présente mais manquante</li>
             </ul>
-            <p class="fragment quote-attrib">Pas pour le flow de contrôle métier normal.</p>
+            <p class="fragment quote-attrib">Pas pour piloter le flow métier <em>normal</em> — pour ça : retour <code>?T</code> ou <code>Result&lt;T, E&gt;</code>.</p>
+            <p class="fragment small-text">Convention : <code>find*()</code> peut retourner <code>null</code> (lookup <em>exploratoire</em>) ; <code>get*()</code>/<code>load*()</code> <strong>lève</strong> (lookup <em>assertif</em> — l'absence est un bug ou une rupture d'invariant). C'est dans ce dernier cas qu'un <code>UserNotFoundException</code> est légitime.</p>
+        </section>
+
+        <section style="font-size: 0.6em;">
+            <h2>⚠️ Le défaut de PHP : exceptions <em>unchecked</em></h2>
+            <p>Une signature PHP ne déclare <strong>jamais</strong> ce qu'une méthode peut lever :</p>
+<pre><code class="php" data-trim>
+public function placeOrder(Cart $cart): Order {
+    // ↑ la signature ne dit rien des exceptions possibles
+    //   pourtant cette méthode peut lever :
+    //     InsufficientFundsException, OutOfStockException,
+    //     PaymentDeclinedException, InvalidCouponException, …
+}
+</code></pre>
+            <p class="fragment">L'appelant doit lire l'implémentation (et toutes ses transitives) pour deviner quoi <code>catch</code>er.</p>
+            <table class="cost-table" style="font-size: 0.9em; margin-top: 0.6em;">
+                <thead>
+                    <tr><th>Langage</th><th>Modèle</th><th>Conséquence</th></tr>
+                </thead>
+                <tbody>
+                    <tr class="fragment"><td><strong>Java, Swift</strong></td><td>Checked (<code>throws X</code>, <code>try</code>)</td><td>Compilo force la déclaration ou le <code>catch</code></td></tr>
+                    <tr class="fragment"><td><strong>C#, Kotlin, JS, Python, PHP</strong></td><td>Unchecked</td><td>Convention seulement — rien n'est garanti</td></tr>
+                    <tr class="fragment"><td><strong>Rust, Haskell, OCaml</strong></td><td>Pas d'exceptions</td><td><code>Result&lt;T, E&gt;</code> / <code>Either</code> obligatoires dans la signature</td></tr>
+                </tbody>
+            </table>
+            <p class="fragment small-text" style="margin-top: 0.8em;"><strong>Parade en PHP :</strong> annoter <code>@throws</code> en PHPDoc + activer les <em>throws rules</em> de <code>PHPStan</code> pour exiger déclaration et propagation.</p>
         </section>
 
         <section>
@@ -1230,29 +1433,6 @@ final class UserNotFoundException extends NotFoundException {
         </section>
 
         <section>
-            <h2>Exceptions du domaine vs techniques</h2>
-            <div class="two-col">
-                <div>
-                    <h3>🏛️ Domaine</h3>
-                    <ul>
-                        <li><code>InsufficientFundsException</code></li>
-                        <li><code>OrderAlreadyApprovedException</code></li>
-                        <li><code>UserNotActiveException</code></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3>⚙️ Technique</h3>
-                    <ul>
-                        <li><code>DatabaseConnectionException</code></li>
-                        <li><code>HttpClientException</code></li>
-                        <li><code>FileNotFoundException</code></li>
-                    </ul>
-                </div>
-            </div>
-            <p class="fragment">Le cas technique remonte ; le cas domaine se traduit.</p>
-        </section>
-
-        <section>
             <h2>Le pattern Result</h2>
             <p>Pour les cas d'erreur <em>attendus</em> (validation, par exemple).</p>
 <pre><code class="php" data-trim>
@@ -1288,7 +1468,7 @@ $r = validate($input); // ✅ OK
             <p class="fragment">Fini les retours ignorés par inadvertance.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2><code>#[NoDiscard]</code> : cas d'usage</h2>
             <ul>
                 <li class="fragment">Fonctions de validation → leur résultat doit être consommé</li>
@@ -1368,179 +1548,11 @@ try {
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 8 — NOUVEAUTÉS PHP 8.5                                -->
-        <!-- ============================================================ -->
-
-        <section data-background-gradient="linear-gradient(to bottom right, #4a3a1d, #0a1929)">
-            <h2 class="section-title">Partie 8</h2>
-            <h1 class="section-main">Nouveautés PHP 8.5</h1>
-            <p class="section-meta">Cherry on top — pipe, NoDiscard, et friends</p>
-        </section>
-
-        <section>
-            <h2>L'opérateur pipe <code>|&gt;</code> (PHP 8.5)</h2>
-            <p>Composition fonctionnelle, sans variable temporaire.</p>
-            <div class="two-col">
-                <div>
-                    <h3>Avant</h3>
-<pre><code class="php" data-trim>
-$result = strtolower(
-    trim(
-        str_replace(
-            ' ',
-            '-',
-            $title,
-        ),
-    ),
-);
-</code></pre>
-                </div>
-                <div>
-                    <h3>Après</h3>
-<pre><code class="php" data-trim>
-$result = $title
-    |> str_replace(' ', '-', ...)
-    |> trim(...)
-    |> strtolower(...);
-</code></pre>
-                </div>
-            </div>
-            <p class="fragment">Lecture top-down, dans l'ordre d'exécution.</p>
-        </section>
-
-        <section>
-            <h2><code>|&gt;</code> et programmation défensive</h2>
-            <p>Chaque étape est une transformation explicite, sans mutation.</p>
-<pre><code class="php" data-trim>
-$normalizedEmail = $input
-    |> trim(...)
-    |> strtolower(...)
-    |> fn(string $s): Email => new Email($s);
-
-$slug = $title
-    |> mb_strtolower(...)
-    |> fn(string $s): string => preg_replace('/[^a-z0-9]+/', '-', $s)
-    |> trim(...);
-</code></pre>
-            <p class="fragment">Pas de variable intermédiaire = pas de réassignation accidentelle.</p>
-        </section>
-
-        <section>
-            <h2><code>|&gt;</code> + first-class callables</h2>
-            <p>Le combo qui change tout.</p>
-<pre><code class="php" data-trim>
-final readonly class UserNormalizer {
-    public function normalize(string $raw): User {
-        return $raw
-            |> $this->trim(...)
-            |> $this->validateEmail(...)
-            |> $this->toUser(...);
-    }
-
-    private function trim(string $s): string { return trim($s); }
-    private function validateEmail(string $s): Email { return new Email($s); }
-    private function toUser(Email $e): User { return User::from($e); }
-}
-</code></pre>
-            <p class="fragment">Chaque méthode est petite, pure, testable.</p>
-        </section>
-
-        <section>
-            <h2><code>array_first()</code> et <code>array_last()</code> (PHP 8.5)</h2>
-            <div class="two-col">
-                <div>
-                    <h3 class="bad">❌ Avant</h3>
-<pre><code class="php" data-trim>
-$first = reset($items);
-// ⚠️ Modifie le pointeur interne !
-// ⚠️ false si tableau vide
-// ⚠️ Pas pur
-
-$first = $items[array_key_first($items)] ?? null;
-// Verbeux
-</code></pre>
-                </div>
-                <div>
-                    <h3 class="good">✅ Après</h3>
-<pre><code class="php" data-trim>
-$first = array_first($items);
-// null si vide
-// Ne mute rien
-
-$last = array_last($items);
-// pareil, propre
-</code></pre>
-                </div>
-            </div>
-            <p class="fragment">Fonctions <em>pures</em>, sans effet de bord. Comme on les aime.</p>
-        </section>
-
-        <section>
-            <h2>Gestionnaires d'erreurs accessibles (PHP 8.5)</h2>
-            <p><code>get_error_handler()</code> et <code>get_exception_handler()</code> existent enfin.</p>
-<pre><code class="php" data-trim>
-// Avant PHP 8.5 : on devait passer par un workaround crasseux
-$previous = set_error_handler(null);
-set_error_handler($previous);
-
-// PHP 8.5
-$current = get_error_handler();
-if ($current !== null) {
-    // on peut introspecter, logger, chaîner proprement
-}
-</code></pre>
-            <p class="fragment">Utile pour les libs qui veulent composer avec un handler existant sans l'écraser.</p>
-        </section>
-
-        <section>
-            <h2>Stack traces pour erreurs fatales (PHP 8.5)</h2>
-            <p>Plus de « Out of memory » sans contexte.</p>
-<pre><code class="text" data-trim>
-Fatal error: Allowed memory size of 134217728 bytes exhausted
-  Stack trace:
-  #0 /app/src/Service/HugeLoader.php(42): array_merge(...)
-  #1 /app/src/Controller/IndexController.php(18): HugeLoader->load()
-  #2 /app/public/index.php(7): IndexController->index()
-  #3 {main}
-</code></pre>
-            <p class="fragment">Activé par défaut. Plus de debug à l'aveugle.</p>
-        </section>
-
-        <section>
-            <h2>Constantes finales (PHP 8.5)</h2>
-            <p>Empêcher la surcharge des constantes en sous-classe.</p>
-<pre><code class="php" data-trim>
-class Base {
-    final public const string VERSION = '1.0';
-}
-
-class Sub extends Base {
-    public const string VERSION = '2.0';
-    // Fatal error: Sub::VERSION cannot override final constant Base::VERSION
-}
-</code></pre>
-            <p class="fragment">Le contrat d'une constante héritée est protégé.</p>
-            <p class="fragment small-text">Combine bien avec PHP 8.3 (constantes typées).</p>
-        </section>
-
-        <section>
-            <h2>Récap section 8</h2>
-            <ul>
-                <li class="fragment">✅ <code>|&gt;</code> pour la composition lisible et sans mutation</li>
-                <li class="fragment">✅ <code>#[NoDiscard]</code> pour les retours qui <em>doivent</em> être utilisés</li>
-                <li class="fragment">✅ <code>array_first/last</code> pour remplacer <code>reset/end</code></li>
-                <li class="fragment">✅ Stack traces sur les erreurs fatales</li>
-                <li class="fragment">✅ Constantes <code>final</code></li>
-            </ul>
-            <p class="fragment">PHP 8.5 continue d'éliminer les pièges historiques.</p>
-        </section>
-
-        <!-- ============================================================ -->
         <!-- SECTION 9 — OUTILS ET CI                                     -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #2a3a52, #0a1929)">
-            <h2 class="section-title">Partie 9</h2>
+        <section data-background-gradient="linear-gradient(to bottom right, #e2e8f0, #f1f5f9)">
+            <h2 class="section-title">Partie 8</h2>
             <h1 class="section-main">Outils &amp; CI</h1>
             <p class="section-meta">Tout ce dont on a parlé, automatisé</p>
         </section>
@@ -1551,7 +1563,7 @@ class Sub extends Base {
 <pre><code class="yaml" data-trim>
 # phpstan.neon
 parameters:
-    level: 9                 # max
+    level: 10                # max
     paths:
         - src/
         - tests/
@@ -1559,7 +1571,7 @@ parameters:
     checkUninitializedProperties: true
     checkMissingIterableValueType: true
 </code></pre>
-            <p class="fragment">Niveau 9 dès aujourd'hui. Pas plus tard. Maintenant.</p>
+            <p class="fragment">Niveau 10 dès aujourd'hui. Pas plus tard. Maintenant.</p>
         </section>
 
         <section>
@@ -1570,8 +1582,9 @@ parameters:
                 <tr class="fragment"><td>0–2</td><td>Erreurs grossières (méthodes inexistantes)</td></tr>
                 <tr class="fragment"><td>3–5</td><td>Types des paramètres, types de retour</td></tr>
                 <tr class="fragment"><td>6–7</td><td>Nullabilité, types itérables précis</td></tr>
-                <tr class="fragment"><td>8</td><td>Types de retour de <code>mixed</code></td></tr>
-                <tr class="fragment"><td>9</td><td>Tout, y compris <code>mixed</code></td></tr>
+                <tr class="fragment"><td>8</td><td>Appels/accès sur <code>nullable</code> détectés</td></tr>
+                <tr class="fragment"><td>9</td><td>Strict sur <code>mixed</code> (seul le passage est toléré)</td></tr>
+                <tr class="fragment"><td>10</td><td>Appels/accès sur types inconnus (max)</td></tr>
                 </tbody>
             </table>
         </section>
@@ -1608,11 +1621,11 @@ vendor/bin/infection --threads=8 --min-msi=80
             <p class="fragment">Coverage à 100% ≠ tests à 100%.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Pipeline CI minimum vital</h2>
             <ol>
                 <li class="fragment"><code>composer install --no-dev</code> en prod, <code>--dev</code> en CI</li>
-                <li class="fragment"><code>vendor/bin/phpstan analyse --level=9</code></li>
+                <li class="fragment"><code>vendor/bin/phpstan analyse --level=10</code></li>
                 <li class="fragment"><code>vendor/bin/phpcs</code> (PSR-12 minimum)</li>
                 <li class="fragment"><code>vendor/bin/rector --dry-run</code> (cohérence)</li>
                 <li class="fragment"><code>vendor/bin/phpunit</code> (tests)</li>
@@ -1626,8 +1639,8 @@ vendor/bin/infection --threads=8 --min-msi=80
         <!-- SECTION 10 — ANTI-PATTERNS                                   -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #4a1d1d, #0a1929)">
-            <h2 class="section-title">Partie 10</h2>
+        <section data-background-gradient="linear-gradient(to bottom right, #fecaca, #fef2f2)">
+            <h2 class="section-title">Partie 9</h2>
             <h1 class="section-main">Le top 10 des anti-patterns</h1>
             <p class="section-meta">Ce qu'il faut <em>désapprendre</em></p>
         </section>
@@ -1783,8 +1796,8 @@ class UserService extends AbstractBaseEntityServiceFactoryManager {
         <!-- SECTION 11 — APPLICATION CONCRÈTE                            -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #2a523a, #0a1929)">
-            <h2 class="section-title">Partie 11</h2>
+        <section data-background-gradient="linear-gradient(to bottom right, #bbf7d0, #f0fdf4)">
+            <h2 class="section-title">Partie 10</h2>
             <h1 class="section-main">Mise en pratique</h1>
             <p class="section-meta">Refactoring intégral d'un cas réel</p>
         </section>
@@ -1815,7 +1828,7 @@ class UserService {
             <p class="fragment">Combien de problèmes ?</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Les problèmes</h2>
             <ol>
                 <li class="fragment">Paramètre <code>$data</code> non typé</li>
@@ -1863,7 +1876,7 @@ final readonly class RegisterUserCommand {
             <p class="fragment">Le contrat d'entrée est <strong>impossible à mal construire</strong>.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Étape 3 : Entité<br>(état d'agrégat)</h2>
 <pre><code class="php" data-trim>
 final class User {
@@ -1931,12 +1944,12 @@ final readonly class RegisterUserHandler {
         <!-- SECTION 12 — CONCLUSION                                      -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #1a1a2e, #16213e)">
+        <section data-background-gradient="linear-gradient(to bottom right, #f5f7fa, #e2e8f0)">
             <h2 class="section-title">Conclusion</h2>
             <h1 class="section-main">Ce qu'il faut retenir</h1>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Les 8 commandements du PHP défensif</h2>
             <ol>
                 <li class="fragment"><code>declare(strict_types=1)</code> tu écriras</li>
@@ -1945,35 +1958,19 @@ final readonly class RegisterUserHandler {
                 <li class="fragment">Value Objects pour le domaine, primitifs pour l'infra</li>
                 <li class="fragment">Exceptions du domaine, jamais <code>\Exception</code> nu</li>
                 <li class="fragment"><code>#[NoDiscard]</code> sur les retours qui doivent l'être</li>
-                <li class="fragment">PHPStan niveau 9 ou rien</li>
+                <li class="fragment">PHPStan niveau 10 ou rien</li>
                 <li class="fragment"><code>final</code> par défaut, abstrait par intention</li>
             </ol>
         </section>
 
-        <section>
-            <h2>Ce qu'on n'a pas pu couvrir</h2>
-            <ul>
-                <li class="fragment">Attributs (PHP 8.0) en profondeur — métadonnée et runtime</li>
-                <li class="fragment">Fibers (PHP 8.1) et programmation asynchrone</li>
-                <li class="fragment">Lazy objects (PHP 8.4) pour la performance</li>
-                <li class="fragment">DDD tactique (agrégats, événements, sagas)</li>
-                <li class="fragment">CQRS / Event Sourcing</li>
-                <li class="fragment">Type-level programming avec Psalm</li>
-                <li class="fragment">Property hooks avancés et lazy proxies</li>
-            </ul>
-            <p class="fragment small-text">Sujets pour les prochaines confs 😉</p>
-        </section>
-
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Ressources</h2>
             <ul>
                 <li class="fragment">📘 <em>Extremely Defensive PHP</em> — Marco Pivetta (ocramius)</li>
                 <li class="fragment">📕 <em>Implementing Domain-Driven Design</em> — Vaughn Vernon</li>
                 <li class="fragment">📗 <em>Object Design Style Guide</em> — Matthias Noback</li>
-                <li class="fragment">📓 <em>Functional PHP</em> — Luis Atencio</li>
                 <li class="fragment">🌐 <a href="https://phpstan.org">phpstan.org</a> — documentation officielle</li>
                 <li class="fragment">🌐 <a href="https://psalm.dev">psalm.dev</a></li>
-                <li class="fragment">🌐 RFC PHP en cours sur <a href="https://wiki.php.net/rfc">wiki.php.net/rfc</a></li>
             </ul>
         </section>
 
@@ -1988,22 +1985,22 @@ final readonly class RegisterUserHandler {
             <p class="fragment">Elle vous le rendra.</p>
         </section>
 
-        <section data-background-gradient="linear-gradient(to bottom right, #1a1a2e, #16213e)">
+        <section data-background-gradient="linear-gradient(to bottom right, #f5f7fa, #e2e8f0)">
             <h1 class="title-main">Questions ?</h1>
             <p class="title-sub">…et merci.</p>
             <p class="title-meta">
-                <small>Slides : github.com/votre-pseudo/php-defensif</small><br>
-                <small>Twitter / Mastodon : @votre-handle</small>
+                <small>Slides : <a href="https://tdutrion.github.io/defensive-programming/">tdutrion.github.io/defensive-programming</a></small><br>
+                <small>Source : <a href="https://github.com/tdutrion/defensive-programming">github.com/tdutrion/defensive-programming</a></small>
             </p>
         </section>
 
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+<script src="vendor/reveal.js/dist/reveal.js"></script>
+<script src="vendor/reveal.js/plugin/notes/notes.js"></script>
+<script src="vendor/reveal.js/plugin/highlight/highlight.js"></script>
+<script src="vendor/reveal.js/plugin/markdown/markdown.js"></script>
 <script>
     Reveal.initialize({
         hash: true,

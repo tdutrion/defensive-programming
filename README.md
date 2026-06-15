@@ -11,7 +11,7 @@ Inspiré du talk *Extremely Defensive PHP* de Marco Pivetta (ocramius), modernis
 - PHP 8.2 : `readonly` classes, DNF types
 - PHP 8.3 : constantes typées
 - PHP 8.4 : property hooks, asymmetric visibility, lazy objects
-- PHP 8.5 : opérateur pipe `|>`, attribut `#[NoDiscard]`, `array_first()`/`array_last()`, stack traces sur erreurs fatales, constantes `final`
+- PHP 8.5 : attribut `#[NoDiscard]`
 
 ## Structure (~90 slides)
 
@@ -23,24 +23,18 @@ Inspiré du talk *Extremely Defensive PHP* de Marco Pivetta (ocramius), modernis
 6. Nullabilité maîtrisée
 7. Encapsulation
 8. Exceptions et résultats
-9. Nouveautés PHP 8.5
-10. Outils & CI
-11. Top 10 des anti-patterns
-12. Mise en pratique (refactoring)
-13. Conclusion
+9. Outils & CI
+10. Top 10 des anti-patterns
+11. Mise en pratique (refactoring)
+12. Conclusion
 
 ## Lancement
 
-Aucune build step nécessaire — reveal.js est chargé depuis le CDN.
+Aucune build step nécessaire — toutes les ressources (reveal.js, highlight.js, GIF) sont **embarquées localement** dans `vendor/` et `assets/`. Le deck fonctionne intégralement **hors-ligne**.
 
-```bash
-# Soit via un serveur statique
-python3 -m http.server 8000
-# puis ouvrir http://localhost:8000
+Ouvre simplement `index.html` dans ton navigateur (double-clic ou `open index.html` sur macOS).
 
-# Soit avec npx
-npx serve .
-```
+> Un serveur statique (`python3 -m http.server 8000`, `npx serve .`) n'est nécessaire que si tu ajoutes des fichiers markdown externes ou des modules ES, ou pour tester l'export PDF via `?print-pdf`.
 
 ## Raccourcis utiles
 
@@ -59,7 +53,9 @@ Ouvrir l'URL avec `?print-pdf` (ex: `http://localhost:8000/?print-pdf`), puis im
 
 - Slides : `index.html`
 - Thème custom : `css/custom.css`
-- Thème reveal.js de base : `night` (modifiable dans `index.html`)
+- Thème reveal.js de base : `white` (modifiable dans `index.html`)
+- Librairies vendues : `vendor/reveal.js/` (reveal.js 5.1.0) et `vendor/highlight.js/` (highlight.js 11.9.0)
+- Images : `assets/`
 
 ## Licence
 
