@@ -30,35 +30,27 @@
         </section>
 
         <section>
-            <h2>👋 Qui suis-je ?</h2>
+            <h2>👋 Moi, et pourquoi je suis là</h2>
             <ul>
-                <li class="fragment">Thomas Dutrion</li>
-                <li class="fragment">Développeur PHP senior</li>
-                <li class="fragment">Passionné de code legacy</li>
-                <li class="fragment">Convaincu qu'un bon code n'existe pas</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>🎯 Pourquoi ce talk ?</h2>
-            <ul>
-                <li class="fragment">Vous codez mal</li>
-                <li class="fragment">Je code mal</li>
-                <li class="fragment">On va au bar jusqu'à bien trop tard pour un soir de semaine</li>
+                <li class="fragment">Thomas Dutrion — développeur PHP senior</li>
+                <li class="fragment">Passionné de code legacy (oui, ça se soigne)</li>
+                <li class="fragment">Convaincu qu'un bon code n'existe pas — seulement du code qui se défend tout seul</li>
+                <li class="fragment">Vous codez mal. Je code mal. On va au bar jusqu'à trop tard un soir de semaine.</li>
             </ul>
         </section>
 
         <section>
             <h2>📋 Programme</h2>
             <ol class="agenda">
-                <li class="fragment">Qu'est-ce que la programmation défensive ?</li>
-                <li class="fragment">Le système de types (strict, union, intersection, DNF, never)</li>
-                <li class="fragment">Immutabilité (<code>readonly</code>, classes <code>readonly</code>, visibilité asymétrique)</li>
+                <li class="fragment">Philosophie : pourquoi se donner tout ce mal (poka-yoke)</li>
+                <li class="fragment">La programmation défensive, en une définition</li>
+                <li class="fragment">Le système de types</li>
+                <li class="fragment">Immutabilité</li>
                 <li class="fragment">Value Objects et Enums</li>
                 <li class="fragment">Nullabilité maîtrisée</li>
-                <li class="fragment">Encapsulation et property hooks</li>
-                <li class="fragment">Exceptions et résultats (+ <code>#[NoDiscard]</code> PHP 8.5)</li>
-                <li class="fragment">Outils et CI</li>
+                <li class="fragment">Encapsulation</li>
+                <li class="fragment">Exceptions et résultats</li>
+                <li class="fragment">Un vrai refactoring, de bout en bout — avec l'API Pathé</li>
             </ol>
         </section>
 
@@ -71,7 +63,105 @@
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 2 — QU'EST-CE QUE LA PROGRAMMATION DÉFENSIVE ?       -->
+        <!-- SECTION 2 — PHILOSOPHIE                                      -->
+        <!-- ============================================================ -->
+
+        <section data-background-gradient="linear-gradient(to bottom right, #fef3c7, #fffbeb)">
+            <h2 class="section-title">Partie 0</h2>
+            <h1 class="section-main">Philosophie</h1>
+            <p class="section-meta">Pourquoi se donner tout ce mal ?</p>
+        </section>
+
+        <section>
+            <h2>Le coût réel d'un bug</h2>
+            <p class="small-text">Chaque contrainte qu'on va ajouter au code aujourd'hui a un seul objectif : détecter l'erreur le plus tôt possible dans cette chronologie.</p>
+            <table class="cost-table">
+                <thead>
+                <tr>
+                    <th>Étape</th>
+                    <th>Coût relatif</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="fragment"><td>Pendant la frappe (IDE / typage)</td><td>1×</td></tr>
+                <tr class="fragment"><td>À l'analyse statique (PHPStan)</td><td>5×</td></tr>
+                <tr class="fragment"><td>Aux tests unitaires</td><td>10×</td></tr>
+                <tr class="fragment"><td>En revue de code</td><td>20×</td></tr>
+                <tr class="fragment"><td>En recette</td><td>50×</td></tr>
+                <tr class="fragment"><td>En production (1h du matin)</td><td>1500×</td></tr>
+                </tbody>
+            </table>
+            <p class="fragment small-text">Sources : tkt.</p>
+        </section>
+
+        <section>
+            <h2>ポカヨケ — Poka-yoke</h2>
+            <p>Un mot que l'ingénieur <strong>Shigeo Shingo</strong> donne en 1960 à une idée toute simple, chez Toyota.</p>
+            <ul>
+                <li class="fragment"><strong>Poka</strong> (ポカ) : une erreur par inattention</li>
+                <li class="fragment"><strong>Yokeru</strong> (よける) : éviter</li>
+                <li class="fragment">Un <strong>poka-yoke</strong> : un dispositif qui rend une erreur humaine impossible — ou immédiatement visible</li>
+            </ul>
+            <p class="fragment quote-attrib">L'exemple préféré de tout le monde : la carte SD, qui ne rentre que dans un sens.</p>
+        </section>
+
+        <section>
+            <h2>Deux familles de poka-yoke</h2>
+            <div class="two-col">
+                <div>
+                    <h3 class="good">🛡️ Prévention</h3>
+                    <p>Rend l'erreur <strong>physiquement impossible</strong>.</p>
+                    <p class="small-text">Le connecteur USB-C : réversible. Il n'y a plus d'erreur à faire.</p>
+                </div>
+                <div>
+                    <h3 class="bad">🚨 Détection</h3>
+                    <p>Laisse l'erreur se produire, mais la <strong>signale immédiatement</strong>.</p>
+                    <p class="small-text">Le bip de la voiture si la ceinture n'est pas mise.</p>
+                </div>
+            </div>
+            <p class="fragment">En code, on a exactement les deux familles — et on va les croiser tout le talk.</p>
+        </section>
+
+        <section>
+            <h2>Le parallèle avec le code</h2>
+            <div class="two-col">
+                <div>
+                    <h3 class="good">Prévention</h3>
+                    <p class="small-text">Système de types, <code>readonly</code>, Value Objects, enums.</p>
+                    <p class="fragment">Rendre l'état invalide <strong>irreprésentable</strong>.</p>
+                </div>
+                <div>
+                    <h3 class="bad">Détection</h3>
+                    <p class="small-text">Exceptions fail-fast, validations, <code>throw</code> en expression.</p>
+                    <p class="fragment">Signaler l'erreur au plus tôt quand on n'a pas pu la prévenir.</p>
+                </div>
+            </div>
+            <p class="fragment quote-attrib">« Make illegal states unrepresentable. » — Yaron Minsky</p>
+            <p class="fragment"><strong>La hiérarchie n'est pas neutre</strong> : préférez toujours la prévention. La détection est un filet de sécurité, pas un plan.</p>
+        </section>
+
+        <section>
+            <h2>Le code n'est pas discipliné, il est contraint</h2>
+            <p>Une checklist de code review, une convention dans le README, un commentaire « ne pas oublier de » : ce sont des poka-yoke qui n'en sont pas.</p>
+            <p class="fragment">Ils comptent sur la mémoire et la bonne volonté humaines.</p>
+            <p class="fragment big-text">Un poka-yoke qui dépend de la discipline de quelqu'un n'est pas un poka-yoke. C'est un espoir.</p>
+        </section>
+
+        <section style="font-size: 0.85em;">
+            <h2>Le fil rouge : une vraie API</h2>
+            <p>Toutes les démos de ce talk s'appuient sur une API réelle : celle de <strong>pathe.fr</strong>, documentée (sans autorisation officielle) sur <a href="https://tdutrion.github.io/pathe-fr-unofficial-api-doc/">tdutrion.github.io/pathe-fr-unofficial-api-doc</a>.</p>
+            <p class="fragment">Une vraie API, avec ses vraies bizarreries — le genre de choses qu'on découvre en prod à 1h du matin.</p>
+<pre class="fragment"><code class="json" data-trim>
+{
+  "auditoriumCapacity": "348"
+}
+</code></pre>
+            <p class="fragment small-text">…un nombre de sièges. En string.</p>
+            <p class="fragment">On corrige ça, entre autres, dans les 45 prochaines minutes.</p>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 3 — LA PROGRAMMATION DÉFENSIVE                       -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #dbeafe, #eff6ff)">
@@ -81,25 +171,13 @@
         </section>
 
         <section>
-            <h2>Définition</h2>
-            <p>La <strong>programmation défensive</strong>, c'est :</p>
+            <h2>Une définition, un contrat</h2>
+            <p>La <strong>programmation défensive</strong> : anticiper que tout ce qui peut mal se passer, se passera mal — et refuser les états invalides <strong>par construction</strong>.</p>
             <ul>
-                <li class="fragment">Anticiper que <em>tout ce qui peut mal se passer</em> se passera mal</li>
-                <li class="fragment">Refuser les états invalides <strong>par construction</strong></li>
-                <li class="fragment">Échouer <strong>tôt</strong>, <strong>fort</strong>, et <strong>au bon endroit</strong></li>
-                <li class="fragment">Faire confiance au compilateur, pas aux humains</li>
+                <li class="fragment">Chaque fonction est un <strong>contrat</strong> : pré-conditions, post-conditions, invariants</li>
+                <li class="fragment">Plus on encode ce contrat dans les <em>types</em>, moins il faut le vérifier à l'exécution</li>
+                <li class="fragment">C'est du <strong>poka-yoke</strong>, appliqué à une signature de fonction</li>
             </ul>
-        </section>
-
-        <section>
-            <h2>Le contrat</h2>
-            <p>Chaque fonction est un <strong>contrat</strong> :</p>
-            <ul>
-                <li class="fragment"><strong>Pré-conditions</strong> : ce que j'attends de mes arguments</li>
-                <li class="fragment"><strong>Post-conditions</strong> : ce que je garantis en retour</li>
-                <li class="fragment"><strong>Invariants</strong> : ce qui reste vrai du début à la fin</li>
-            </ul>
-            <p class="fragment">Plus on encode ce contrat dans les <em>types</em>, moins il faut le vérifier à l'exécution.</p>
         </section>
 
         <section>
@@ -116,9 +194,6 @@ function divide($a, $b) {
         return null;
     }
     if ($b == 0) {
-        return null;
-    }
-    if ($a === null) {
         return null;
     }
     return $a / $b;
@@ -143,61 +218,14 @@ function divide(
             <p class="fragment">Le système de types fait 80 % du travail.</p>
         </section>
 
-        <section>
-            <h2>Le coût des bugs</h2>
-            <table class="cost-table">
-                <thead>
-                <tr>
-                    <th>Étape</th>
-                    <th>Coût relatif</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr class="fragment"><td>Pendant la frappe (IDE / typage)</td><td>1×</td></tr>
-                <tr class="fragment"><td>À l'analyse statique (PHPStan)</td><td>5×</td></tr>
-                <tr class="fragment"><td>Aux tests unitaires</td><td>10×</td></tr>
-                <tr class="fragment"><td>En revue de code</td><td>20×</td></tr>
-                <tr class="fragment"><td>En recette</td><td>50×</td></tr>
-                <tr class="fragment"><td>En production (1h du matin)</td><td>1500×</td></tr>
-                </tbody>
-            </table>
-            <p class="fragment small-text">Sources : tkt.</p>
-        </section>
-
-        <section style="font-size: 0.8em;">
-            <h2>Fail fast, fail loud</h2>
-            <div class="two-col">
-                <div>
-                    <h3 class="bad">❌ Silence radio</h3>
-<pre><code class="php" data-trim>
-public function setAge($age): void {
-    if ($age < 0) {
-        $age = 0; // ¯\_(ツ)_/¯
-    }
-    $this->age = $age;
-}
-</code></pre>
-                    <p class="small-text">Bug masqué pendant 3 mois. Bonne chance.</p>
-                </div>
-                <div>
-                    <h3 class="good">✅ Échec immédiat</h3>
-<pre><code class="php" data-trim>
-public function setAge(int $age): void {
-    if ($age < 0) {
-        throw new InvalidArgumentException(
-            "Âge négatif: {$age}"
-        );
-    }
-    $this->age = $age;
-}
-</code></pre>
-                    <p class="small-text">Stacktrace claire, dev appelé en 5 minutes.</p>
-                </div>
-            </div>
+        <section data-background="#eff6ff">
+            <h2>À partir de maintenant</h2>
+            <p class="big-text fragment">Chaque partie applique ces principes à un vrai morceau d'API.</p>
+            <p class="fragment">Code mauvais → code qui se défend tout seul.</p>
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 3 — LE SYSTÈME DE TYPES                              -->
+        <!-- SECTION 4 — LE SYSTÈME DE TYPES                              -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #cffafe, #ecfeff)">
@@ -208,34 +236,31 @@ public function setAge(int $age): void {
 
         <section>
             <h2><code>declare(strict_types=1);</code></h2>
-            <p>La ligne la plus rentable de votre fichier.</p>
-            <p class="fragment">Sans elle, PHP essaie d'être <em>poli</em> :</p>
-<pre class="fragment"><code class="php" data-trim>
+            <p class="small-text">La ligne la plus rentable de votre fichier.</p>
+            <div class="two-col">
+                <div>
+                    <h3 class="bad">❌ Sans</h3>
+<pre><code class="php" data-trim>
 function add(int $a, int $b): int {
     return $a + $b;
 }
 
-add("5", "10");   // 15  — euh, ok ?
-add("5abc", 10);  // 15  — euh, vraiment ?
-add(true, 1.7);   // 2   — au secours
+add("5", "10");   // 15 — euh, ok ?
+add(true, 1.7);   // 2  — au secours
 </code></pre>
-        </section>
-
-        <section>
-            <h2>Avec <code>strict_types=1</code></h2>
+                </div>
+                <div>
+                    <h3 class="good">✅ Avec <code>strict_types</code></h3>
 <pre><code class="php" data-trim>
 declare(strict_types=1);
 
-function add(int $a, int $b): int {
-    return $a + $b;
-}
-
 add("5", "10");
-// TypeError: add(): Argument #1 ($a) must be of type int,
-//            string given
+// TypeError: add(): Argument #1 ($a)
+// must be of type int, string given
 </code></pre>
-            <p class="fragment">À mettre <strong>en haut de chaque fichier</strong>. Sans exception.</p>
-            <p class="fragment small-text">Note : vos interfaces n'en ont pas besoin.</p>
+                </div>
+            </div>
+            <p class="fragment">En haut de <strong>chaque fichier</strong>. Sans exception.</p>
         </section>
 
         <section>
@@ -244,22 +269,20 @@ add("5", "10");
                 <div>
                     <h3 class="bad">❌</h3>
 <pre><code class="php" data-trim>
-public function find($id) {
-    // Que retourne-t-on ?
-    // Un User ? null ? false ?
-    // Un array ? Une Collection ?
-    // Une licorne ?
+public function findShow($slug) {
+    // Un Show ? null ? false ?
+    // Un array brut de l'API ?
 }
 </code></pre>
                 </div>
                 <div>
                     <h3 class="good">✅</h3>
 <pre><code class="php" data-trim>
-public function find(
-    UserId $id,
-): ?User {
+public function findShow(
+    ShowSlug $slug,
+): ?Show {
     // Le contrat est clair :
-    // un User ou null.
+    // un Show ou null.
 }
 </code></pre>
                 </div>
@@ -267,35 +290,35 @@ public function find(
             <p class="fragment">Le type de retour est <strong>de la documentation exécutable</strong>.</p>
         </section>
 
-        <section>
-            <h2>Union types (PHP 8.0)</h2>
-            <p>Pour dire « plusieurs types possibles » sans mentir.</p>
+        <section style="font-size: 0.85em;">
+            <h2>Union &amp; intersection types</h2>
+            <div class="two-col">
+                <div>
+                    <h3>Union (PHP 8.0)</h3>
+                    <p class="small-text">« Plusieurs types possibles », sans mentir.</p>
 <pre><code class="php" data-trim>
 function formatId(int|string $id): string {
     return (string) $id;
 }
 </code></pre>
-            <p class="fragment">Utiliser avec parcimonie : si vous avez <code>A|B|C|D|E</code>, vous avez probablement un problème de design.</p>
-            <p class="fragment">Souvent, un Value Object remplace une union utilement.</p>
-        </section>
-
-        <section>
-            <h2>Intersection types (PHP 8.1)</h2>
-            <p>Pour dire « doit implémenter <em>plusieurs</em> interfaces ».</p>
+                    <p class="fragment small-text">Si vous avez <code>A|B|C|D</code>, un Value Object remplace souvent l'union.</p>
+                </div>
+                <div>
+                    <h3>Intersection (PHP 8.1)</h3>
+                    <p class="small-text">« Doit implémenter plusieurs interfaces ».</p>
 <pre><code class="php" data-trim>
-function count(Countable&Iterator $items): int {
-    foreach ($items as $item) {
-        // $items est itérable ET comptable
-    }
-    return count($items);
-}
+function count(
+    Countable&Iterator $items
+): int { /* … */ }
 </code></pre>
-            <p class="fragment">Plus précis que de demander un type concret. Plus testable. Plus mockable.</p>
+                    <p class="fragment small-text">Plus précis qu'un type concret. Plus mockable.</p>
+                </div>
+            </div>
         </section>
 
         <section>
             <h2>DNF types (PHP 8.2)</h2>
-            <p>Disjunctive Normal Form : combinaison d'unions et d'intersections.</p>
+            <p class="small-text">Disjunctive Normal Form : combinaison d'unions et d'intersections.</p>
 <pre><code class="php" data-trim>
 function process(
     (Countable&Iterator)|null $items,
@@ -306,59 +329,30 @@ function process(
     // Ici, $items est garanti Countable ET Iterator
 }
 </code></pre>
-            <p class="fragment" style="font-size: 0.9em;">À lire littéralement : « (Countable ET Iterator) OU null ».</p>
+            <p class="fragment">À lire littéralement : « (Countable ET Iterator) OU null ».</p>
         </section>
 
         <section>
             <h2>Le type <code>never</code> (PHP 8.1)</h2>
-            <p>« Cette fonction ne rend jamais la main. »</p>
+            <p class="small-text">« Cette fonction ne rend jamais la main. »</p>
 <pre><code class="php" data-trim>
 function panic(string $message): never {
     throw new RuntimeException($message);
 }
 
-function processOrder(?Order $order): void {
-    if ($order === null) {
-        panic('Order disparu');
+function processBooking(?Cinema $cinema): void {
+    if ($cinema === null) {
+        panic('Cinéma introuvable');
     }
-    // PHPStan sait qu'ici $order n'est pas null
-    $order->process();
+    // PHPStan sait qu'ici $cinema n'est pas null
+    $cinema->book(/* … */);
 }
 </code></pre>
-            <p class="fragment"><code>never</code> ⊂ <code>void</code> : c'est encore plus strict.</p>
-        </section>
-
-        <section>
-            <h2><code>void</code> vs <code>never</code></h2>
-            <div class="two-col">
-                <div>
-                    <h3><code>void</code></h3>
-                    <p>La fonction <strong>retourne</strong>, mais sans valeur.</p>
-<pre><code class="php" data-trim>
-function log(string $m): void {
-    error_log($m);
-    return;
-}
-</code></pre>
-                </div>
-                <div>
-                    <h3><code>never</code></h3>
-                    <p>La fonction <strong>ne retourne jamais</strong>.</p>
-<pre><code class="php" data-trim>
-function die(string $m): never {
-    throw new Exception($m);
-    // ou exit() ;
-    // ou boucle infinie
-}
-</code></pre>
-                </div>
-            </div>
-            <p class="fragment">Conséquence pratique : l'analyseur statique en tire des conclusions de flow.</p>
         </section>
 
         <section>
             <h2>Génériques (via PHPStan/Psalm)</h2>
-            <p>Pas dans le langage… mais dans les annotations.</p>
+            <p class="small-text">Pas dans le langage… mais dans les annotations.</p>
 <pre><code class="php" data-trim>
 /**
  * @template T of object
@@ -369,105 +363,43 @@ function instantiate(string $class): object {
     return new $class();
 }
 
-$user = instantiate(User::class); // inféré comme User
+$cinema = instantiate(Cinema::class); // inféré comme Cinema
 </code></pre>
             <p class="fragment">PHPStan, Psalm et PhpStorm comprennent parfaitement.</p>
         </section>
 
-        <section>
-            <h2>Cas pratique : avant</h2>
-<pre><code class="php" data-trim>
-class OrderService {
-    public function process($order) {
-        if (!$order) {
-            return false;
-        }
-        if (!isset($order['items'])) {
-            return false;
-        }
-        if (count($order['items']) === 0) {
-            return null; // pourquoi pas false ? mystère.
-        }
-        // ... 50 lignes ...
-        return $result;
-    }
-}
-</code></pre>
-            <p class="fragment">Combien d'erreurs vous pouvez compter ?</p>
-        </section>
-
-        <section>
-            <h2>Cas pratique : après</h2>
-<pre><code class="php" data-trim>
-class OrderService {
-    public function process(Order $order): ProcessedOrder {
-        if ($order->items->isEmpty()) {
-            throw new EmptyOrderException($order->id);
-        }
-        // ... travail réel, pas de garde-fou ...
-        return new ProcessedOrder(/* … */);
-    }
-}
-</code></pre>
-            <p class="fragment">Le compilateur (et PHPStan) vous interdit d'appeler <code>process</code> avec autre chose qu'un <code>Order</code>.</p>
-            <p class="fragment">Les contrôles deviennent <strong>des affirmations métier</strong>, pas des vérifs techniques.</p>
-        </section>
-
-        <section style="font-size: 0.55em;">
-            <h2>Collection typée : <code>ArrayAccess</code> + splat</h2>
+        <section style="font-size: 0.7em;">
+            <h2>Cas pratique : la réponse qui change de forme</h2>
+            <p class="small-text"><code>/show/{slug}/showtimes/{cinemaSlug}</code> renvoie un objet daté <strong>ou</strong> un tableau vide, selon les cas :</p>
             <div class="two-col">
                 <div>
-                    <h3>Construction</h3>
+                    <h3 class="bad">❌ Avant</h3>
 <pre><code class="php" data-trim>
-final readonly class OrderItemCollection
-    implements ArrayAccess
-{
-    /** @var list&lt;OrderItem&gt; */
-    private array $items;
-
-    public function __construct(OrderItem ...$items)
-    {
-        $this->items = array_values($items);
+function getShowtimes($show, $cinema) {
+    $r = $this->http->get(/* … */);
+    if (is_array($r) && count($r) === 0) {
+        return [];
     }
-    // …suite →
+    return $r; // object clé=date, ou {}
 }
-
-// Le constructeur impose le type item par item
-$cart = new OrderItemCollection($item1, $item2);
-$cart = new OrderItemCollection(...$itemsFromDb);
-// ❌ ($item1, 'oops')  → TypeError immédiat
+// L'appelant doit deviner la forme.
 </code></pre>
                 </div>
                 <div>
-                    <h3>Accès &amp; immutabilité</h3>
+                    <h3 class="good">✅ Après</h3>
 <pre><code class="php" data-trim>
-public function offsetExists(mixed $offset): bool
-{
-    return isset($this->items[$offset]);
+function getShowtimes(
+    ShowSlug $show,
+    CinemaSlug $cinema,
+): ShowtimeList {
+    $r = $this->http->get(/* … */);
+    return ShowtimeList::fromApiResponse($r);
 }
-
-public function offsetGet(mixed $offset): OrderItem
-{
-    return $this->items[$offset]
-        ?? throw new OutOfBoundsException(
-            "Index inconnu : {$offset}"
-        );
-}
-
-public function offsetSet(mixed $o, mixed $v): never
-{
-    throw new BadMethodCallException('Immuable.');
-}
-
-public function offsetUnset(mixed $o): never
-{
-    throw new BadMethodCallException('Immuable.');
-}
+// Toujours un ShowtimeList. Point.
 </code></pre>
                 </div>
             </div>
-            <p class="fragment">Le splat <code>OrderItem ...$items</code> <strong>type chaque élément</strong> à l'entrée — un tableau hétérogène ne franchit jamais le constructeur.</p>
-            <p class="fragment"><code>readonly</code> + <code>never</code> sur <code>offsetSet</code>/<code>offsetUnset</code> rendent la collection <strong>immuable par construction</strong>.</p>
+            <p class="fragment">L'incohérence de l'API s'arrête <strong>à la frontière</strong> du système.</p>
         </section>
 
         <section>
@@ -479,35 +411,12 @@ public function offsetUnset(mixed $o): never
                 <li class="fragment">✅ Intersections pour les contrats fins</li>
                 <li class="fragment">✅ <code>never</code> pour les sorties anormales</li>
                 <li class="fragment">✅ Génériques via PHPDoc quand utile</li>
+                <li class="fragment">✅ Normaliser les formes incohérentes à la frontière</li>
             </ul>
         </section>
 
-        <section style="font-size: 0.65em;">
-            <h2>⚠️ Limite de <code>strict_types</code> : les callbacks <em>core</em></h2>
-<pre><code class="php" data-trim>
-declare(strict_types=1);
-
-function double(int $x): int {
-    return $x * 2;
-}
-
-// ✅ Appel direct dans ce fichier — strict_types s'applique
-double("5");
-// TypeError: argument #1 ($x) must be of type int, string given
-
-// ❌ Appel via une fonction core — strict_types bypassé
-array_map('double', ['1', '2', '3']);
-// Aucune erreur. Résultat : [2, 4, 6]
-// `array_map` (moteur C) ré-appelle votre callback hors du
-// scope strict_types : les '1', '2', '3' sont coercés en int.
-</code></pre>
-            <p class="fragment"><code>strict_types=1</code> n'agit que sur les appels <strong>écrits dans votre fichier</strong>.</p>
-            <p class="fragment">Dès qu'une fonction interne (<code>array_map</code>, <code>array_filter</code>, <code>usort</code>, <code>preg_replace_callback</code>, <code>call_user_func</code>…) ré-invoque votre callback, la coercition silencieuse revient.</p>
-            <p class="fragment"><strong>Parade :</strong> valider la collection en amont (collection typée, splat, value objects), ou itérer avec un <code>foreach</code> dans votre fichier — là où <code>strict_types</code> s'applique.</p>
-        </section>
-
         <!-- ============================================================ -->
-        <!-- SECTION 4 — IMMUTABILITÉ                                     -->
+        <!-- SECTION 5 — IMMUTABILITÉ                                     -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #c7d2fe, #e0e7ff)">
@@ -522,184 +431,97 @@ array_map('double', ['1', '2', '3']);
                 <li class="fragment">🧠 <strong>Moins de charge cognitive</strong> : si je ne peux pas modifier, je n'ai pas à y penser</li>
                 <li class="fragment">🔒 <strong>Thread-safe par défaut</strong> (utile en Swoole, ReactPHP, fibers…)</li>
                 <li class="fragment">🧪 <strong>Tests triviaux</strong> : pas d'état à reconstruire</li>
-                <li class="fragment">🗺️ <strong>Code prévisible</strong> : un objet construit est un objet final</li>
                 <li class="fragment">🐛 <strong>Bugs impossibles</strong> : pas de mutation surprise depuis une dépendance</li>
             </ul>
         </section>
 
         <section>
-            <h2>Constructor property promotion (PHP 8.0)</h2>
+            <h2><code>readonly</code> properties (PHP 8.1)</h2>
+<pre><code class="php" data-trim>
+final class Cinema {
+    public function __construct(
+        public readonly string $slug,
+        public readonly string $name,
+    ) {}
+}
+
+$cinema = new Cinema('cinema-pathe-dijon', 'Pathé Dijon');
+$cinema->name = 'Autre chose';
+// Error: Cannot modify readonly property Cinema::$name
+</code></pre>
+            <p class="fragment">Plus besoin de <em>getter</em> qui ne fait que renvoyer.</p>
+        </section>
+
+        <section style="font-size: 0.85em;">
+            <h2><code>readonly</code> : par propriété, ou toute la classe</h2>
             <div class="two-col">
                 <div>
-                    <h3>Avant</h3>
+                    <h3 class="bad">PHP 8.1 — par propriété</h3>
 <pre><code class="php" data-trim>
-class User {
-    private string $name;
-    private string $email;
-
+class Cinema {
     public function __construct(
-        string $name,
-        string $email
-    ) {
-        $this->name = $name;
-        $this->email = $email;
-    }
-}
-</code></pre>
-                </div>
-                <div>
-                    <h3>Après</h3>
-<pre><code class="php" data-trim>
-class User {
-    public function __construct(
-        private string $name,
-        private string $email,
+        public readonly string $slug,
+        public string $name, // oups
     ) {}
 }
 </code></pre>
-                    <p class="fragment small-text">Boilerplate divisé par trois.</p>
+                    <p class="small-text">Facile à oublier en revue de code.</p>
+                </div>
+                <div>
+                    <h3 class="good">PHP 8.2 — <code>readonly class</code></h3>
+<pre><code class="php" data-trim>
+readonly class Cinema {
+    public function __construct(
+        public string $slug,
+        public string $name,
+    ) {}
+}
+</code></pre>
+                    <p class="small-text">Impossible d'oublier — c'est au niveau classe.</p>
                 </div>
             </div>
         </section>
 
         <section>
-            <h2><code>readonly</code> properties (PHP 8.1)</h2>
-<pre><code class="php" data-trim>
-class User {
-    public function __construct(
-        public readonly string $name,
-        public readonly string $email,
-    ) {}
-}
-
-$user = new User('Alice', 'alice@example.com');
-$user->name = 'Bob';
-// Error: Cannot modify readonly property User::$name
-</code></pre>
-            <p class="fragment">Plus besoin de <em>getter</em> qui ne fait que renvoyer.</p>
-            <p class="fragment">L'attribut <code>public</code> n'est plus un crime si la propriété est <code>readonly</code>.</p>
-        </section>
-
-        <section>
-            <h2>Limites de <code>readonly</code> par propriété</h2>
-<pre><code class="php" data-trim>
-class User {
-    public function __construct(
-        public readonly string $name,
-        public string $email, // ← oups, mutable
-    ) {}
-}
-</code></pre>
-            <p class="fragment">Il faut le déclarer sur <em>chaque</em> propriété.</p>
-            <p class="fragment">Facile à oublier en code review.</p>
-            <p class="fragment">PHP 8.2 résout ça…</p>
-        </section>
-
-        <section>
-            <h2>Classes <code>readonly</code> (PHP 8.2)</h2>
-<pre><code class="php" data-trim>
-readonly class Point {
-    public function __construct(
-        public float $x,
-        public float $y,
-        public float $z = 0.0,
-    ) {}
-}
-
-$p = new Point(1.0, 2.0);
-$p->x = 5.0; // Error
-</code></pre>
-            <p class="fragment">Toutes les propriétés deviennent <code>readonly</code>.</p>
-            <p class="fragment">Et impossible d'oublier — c'est au niveau classe.</p>
-        </section>
-
-        <section>
             <h2>Le pattern <code>with*()</code></h2>
-            <p>Comment « modifier » un objet immuable ? On en crée un nouveau.</p>
+            <p class="small-text">Comment « modifier » un objet immuable ? On en crée un nouveau.</p>
 <pre><code class="php" data-trim>
-readonly class Money {
+readonly class Showtime {
     public function __construct(
-        public int $amount,
-        public Currency $currency,
+        public ScreeningTime $time,
+        public BookingStatus $status,
     ) {}
 
-    public function withAmount(int $amount): self {
-        return new self($amount, $this->currency);
+    public function withStatus(BookingStatus $status): self {
+        return new self($this->time, $status);
     }
 }
-
-$price = new Money(1000, Currency::EUR);
-$double = $price->withAmount($price->amount * 2);
 </code></pre>
         </section>
 
         <section>
             <h2>Visibilité asymétrique (PHP 8.4)</h2>
-            <p>Mutable en interne, mais immuable depuis l'extérieur.</p>
+            <p class="small-text">Mutable en interne, mais immuable depuis l'extérieur.</p>
 <pre><code class="php" data-trim>
-class Counter {
-    public private(set) int $value = 0;
+class CinemaProgramme {
+    public private(set) int $next24ShowtimesCount = 0;
 
-    public function increment(): void {
-        $this->value++; // OK, on est dans la classe
+    public function refresh(int $count): void {
+        $this->next24ShowtimesCount = $count; // OK, en interne
     }
 }
 
-$c = new Counter();
-echo $c->value;     // 0 — lecture publique
-$c->value = 42;     // Error: visibilité asymétrique
-$c->increment();    // OK
-echo $c->value;     // 1
+$p = new CinemaProgramme();
+$p->next24ShowtimesCount = 42;
+// Error: visibilité asymétrique
+$p->refresh(42); // OK
 </code></pre>
+            <p class="fragment small-text"><code>readonly</code> : jamais modifiable après construction. <code>private(set)</code> : modifiable, mais seulement depuis la classe.</p>
         </section>
 
         <section>
-            <h2><code>readonly</code> vs visibilité asymétrique</h2>
-            <table class="cost-table">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th><code>readonly</code></th>
-                    <th><code>private(set)</code></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr><td>Modifiable après construction ?</td><td>❌ Jamais</td><td>✅ Depuis la classe</td></tr>
-                <tr><td>Visible depuis l'extérieur ?</td><td>✅ En lecture</td><td>✅ En lecture</td></tr>
-                <tr><td>Sérialisable / clonable ?</td><td>⚠️ Subtil</td><td>✅</td></tr>
-                <tr><td>Usage typique</td><td>Value Objects</td><td>Entités d'état contrôlé</td></tr>
-                </tbody>
-            </table>
-        </section>
-
-        <section>
-            <h2>Collections immutables</h2>
-<pre><code class="php" data-trim>
-/**
- * @template T
- */
-final readonly class ImmutableList {
-    /** @var list&lt;T&gt; */
-    private array $items;
-
-    /** @param list&lt;T&gt; $items */
-    public function __construct(array $items) {
-        $this->items = array_values($items);
-    }
-
-    /** @param T $item */
-    public function add(mixed $item): self {
-        return new self([...$this->items, $item]);
-    }
-}
-</code></pre>
-            <p class="fragment">Pas de <code>$list[] = $x</code>. Toujours un <em>nouveau</em> objet.</p>
-        </section>
-
-        <section style="font-size: 0.9em;">
             <h2>Récap section 3</h2>
             <ul>
-                <li class="fragment">✅ Promoted properties pour réduire le bruit</li>
                 <li class="fragment">✅ <code>readonly</code> par défaut sur les Value Objects</li>
                 <li class="fragment">✅ <code>readonly class</code> dès PHP 8.2 pour ne rien oublier</li>
                 <li class="fragment">✅ Visibilité asymétrique pour les entités d'état contrôlé</li>
@@ -709,7 +531,7 @@ final readonly class ImmutableList {
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 5 — VALUE OBJECTS                                    -->
+        <!-- SECTION 6 — VALUE OBJECTS                                    -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #dcfce7, #f0fdf4)">
@@ -725,156 +547,118 @@ final readonly class ImmutableList {
                 <li class="fragment">Immuable</li>
                 <li class="fragment">Égalité par valeur, pas par identité</li>
                 <li class="fragment">Auto-valide à la construction</li>
-                <li class="fragment">Sans <em>id</em> propre</li>
                 <li class="fragment">Encapsule un comportement métier</li>
             </ul>
-            <p class="fragment quote-attrib">Exemples : Email, Money, UserId, Coordinate...</p>
+            <p class="fragment quote-attrib">Exemples : ShowSlug, Coordinates, ScreeningTime...</p>
         </section>
 
-        <section>
-            <h2>Primitive obsession</h2>
-            <p>Le pire ennemi du domaine.</p>
+        <section style="font-size: 0.85em;">
+            <h2>Primitive obsession — un vrai piège</h2>
+            <p class="small-text">Deux slugs, deux <code>string</code>. Rien n'empêche de les inverser.</p>
+            <div class="two-col">
+                <div>
+                    <h3 class="bad">❌</h3>
 <pre><code class="php" data-trim>
-function transfer(
-    string $fromUserId,
-    string $toUserId,
-    int $amountInCents,
-    string $currency,
-    string $reference,
-): bool {
-    // Bonne chance pour appeler ça sans inversion
-}
+function getShowtimes(
+    string $show,
+    string $cinema,
+): array { /* … */ }
 
-transfer($currency, $amount, $to, $from, $ref); // 🤡
+getShowtimes($cinemaSlug, $showSlug); // 🤡
+// Compile. Plante en prod.
 </code></pre>
-            <p class="fragment">Tout est <code>string</code> ou <code>int</code>. Le compilateur ne peut rien faire pour vous.</p>
-        </section>
-
-        <section>
-            <h2>Avec des Value Objects</h2>
+                </div>
+                <div>
+                    <h3 class="good">✅</h3>
 <pre><code class="php" data-trim>
-function transfer(
-    UserId $from,
-    UserId $to,
-    Money $amount,
-    TransferReference $reference,
-): TransferReceipt {
-    // Impossible de se tromper dans l'ordre :
-    // chaque type est unique et incompatible.
-}
+function getShowtimes(
+    ShowSlug $show,
+    CinemaSlug $cinema,
+): ShowtimeList { /* … */ }
+
+getShowtimes($cinemaSlug, $showSlug);
+// TypeError: attendait ShowSlug, CinemaSlug donné
 </code></pre>
-            <p class="fragment">Le compilateur refuse <code>transfer($money, $user, …)</code>.</p>
-            <p class="fragment">Plus de tests à écrire pour vérifier qu'on n'a pas inversé les paramètres.</p>
+                </div>
+            </div>
+            <p class="fragment">Le compilateur refuse l'inversion. Plus de test à écrire pour ça.</p>
         </section>
 
-        <section>
-            <h2>Exemple : <code>Email</code></h2>
+        <section style="font-size: 0.6em;">
+            <h2>Exemple concret : <code>Coordinates</code></h2>
+            <p class="small-text">L'API renvoie <code>{ "x": 47.322, "y": 5.041 }</code> — <code>x</code> est la latitude, <code>y</code> la longitude. Vraiment.</p>
 <pre><code class="php" data-trim>
-final readonly class Email {
-    public function __construct(public string $value) {
-        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException(
-                "Email invalide: {$value}"
-            );
-        }
-    }
-
-    public function domain(): string {
-        return explode('@', $this->value)[1];
-    }
-
-    public function equals(self $other): bool {
-        return strtolower($this->value) === strtolower($other->value);
-    }
-}
-</code></pre>
-            <p class="fragment">Si vous avez un <code>Email</code>, il est <strong>valide</strong>. Point.</p>
-        </section>
-
-        <section>
-            <h2>Exemple : <code>Money</code></h2>
-<pre><code class="php" data-trim>
-final readonly class Money {
-    public function __construct(
-        public int $amountInCents,
-        public Currency $currency,
-    ) {
-        if ($amountInCents < 0) {
-            throw new InvalidArgumentException('Montant négatif interdit');
-        }
-    }
-
-    public function add(self $other): self {
-        if ($this->currency !== $other->currency) {
-            throw new CurrencyMismatchException();
-        }
-        return new self(
-            $this->amountInCents + $other->amountInCents,
-            $this->currency,
-        );
-    }
-}
-</code></pre>
-        </section>
-
-        <section style="font-size: 0.8em;">
-            <h2>… ou avec n'importe quoi d'autre</h2>
-            <p><code>Money</code> n'a rien de spécial. Le même pattern s'applique à <strong>toute contrainte métier</strong>.</p>
-<pre><code class="php" data-trim>
-final readonly class PositiveInteger {
-    public function __construct(public int $value) {
-        if ($value <= 0) {
-            throw new InvalidArgumentException(
-                "Doit être strictement positif, reçu : {$value}"
-            );
-        }
-    }
-
-    public function add(self $other): self {
-        return new self($this->value + $other->value);
-    }
-}
-
-// Impossible de construire un état invalide
-$qty = new PositiveInteger(5);    // ✅
-new PositiveInteger(0);           // ❌ InvalidArgumentException
-new PositiveInteger(-3);          // ❌ InvalidArgumentException
-
-// La signature porte la garantie — plus de check dans la fonction
-function reserveStock(PositiveInteger $qty): void { /* … */ }
-</code></pre>
-        </section>
-
-        <section style="font-size: 0.8em;">
-            <h2>Une famille entière de Value Objects</h2>
-            <p>Autant de classes que de <strong>contraintes métier que vous craignez d'oublier</strong> :</p>
-<pre><code class="php" data-trim>
-final readonly class NonEmptyString {
-    public function __construct(public string $value) {
-        if (trim($value) === '') {
-            throw new InvalidArgumentException('Chaîne vide interdite');
-        }
-    }
-}
-
-final readonly class Percentage {
-    public function __construct(public float $value) {
-        if ($value < 0 || $value > 100) {
-            throw new OutOfRangeException("0–100, reçu : {$value}");
-        }
-    }
-}
-
 final readonly class Latitude {
     public function __construct(public float $value) {
         if ($value < -90 || $value > 90) {
-            throw new OutOfRangeException("-90 à 90, reçu : {$value}");
+            throw new OutOfRangeException("Latitude invalide : {$value}");
         }
     }
 }
+
+final readonly class Longitude {
+    public function __construct(public float $value) {
+        if ($value < -180 || $value > 180) {
+            throw new OutOfRangeException("Longitude invalide : {$value}");
+        }
+    }
+}
+
+final readonly class Coordinates {
+    public function __construct(
+        public Latitude $latitude,
+        public Longitude $longitude,
+    ) {}
+
+    public static function fromApi(array $raw): self {
+        // le mapping x→latitude, y→longitude ne vit qu'ici
+        return new self(new Latitude($raw['x']), new Longitude($raw['y']));
+    }
+}
 </code></pre>
-            <p class="fragment">Et encore : <code>NonEmptyList</code>, <code>SortedArray</code>, <code>FutureDate</code>, <code>UrlSafeString</code>, <code>EvenInteger</code>…</p>
-            <p class="fragment">La règle vit <strong>dans le type</strong>, pas dans une checklist mentale ou des <code>assert</code> éparpillés.</p>
+            <p class="fragment">Le nom trompeur de l'API (<code>x</code>/<code>y</code>) ne fuit <strong>jamais</strong> dans le domaine.</p>
+        </section>
+
+        <section style="font-size: 0.7em;">
+            <h2>Exemple concret : <code>ScreeningTime</code></h2>
+            <p class="small-text">L'API renvoie <code>"2026-08-16 20:10:00"</code> — pas de l'ISO 8601, pas de timezone.</p>
+<pre><code class="php" data-trim>
+final readonly class ScreeningTime {
+    public DateTimeImmutable $value;
+
+    public function __construct(string $raw) {
+        $dt = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $raw);
+        $errors = DateTimeImmutable::getLastErrors();
+        // createFromFormat() accepte "2026-13-45" par rollover silencieux :
+        // seul getLastErrors() détecte ce genre de dépassement.
+        if ($dt === false || $errors['warning_count'] > 0 || $errors['error_count'] > 0) {
+            throw new InvalidArgumentException("Horaire illisible : {$raw}");
+        }
+        $this->value = $dt;
+    }
+}
+</code></pre>
+            <p class="fragment">Le format bizarre de l'API est parsé <strong>une seule fois</strong>, jamais dispersé dans 15 fichiers.</p>
+        </section>
+
+        <section style="font-size: 0.85em;">
+            <h2>Enums (PHP 8.1) : <code>BookingStatus</code></h2>
+            <p class="small-text">La doc de l'API est honnête : <em>« seul <code>available</code> observé ; d'autres valeurs attendues mais non confirmées »</em>.</p>
+<pre><code class="php" data-trim>
+enum BookingStatus: string {
+    case Available = 'available';
+    case SoldOut   = 'sold_out';
+    case Cancelled = 'cancelled';
+
+    public function isBookable(): bool {
+        return $this === self::Available;
+    }
+}
+
+BookingStatus::from('available');  // ✅
+BookingStatus::from('complet');    // ValueError explicite
+</code></pre>
+            <p class="fragment">Une valeur non prévue ne se glisse plus silencieusement dans le système.</p>
         </section>
 
         <section style="font-size: 0.65em;">
@@ -882,7 +666,7 @@ final readonly class Latitude {
             <div class="two-col" style="align-items: center;">
                 <div>
                     <p style="font-size: 1.25em; margin-bottom: 0.8em;"><strong style="color: #c2410c;">« Wrap all primitives and Strings »</strong></p>
-                    <p>Un primitif qui porte une <strong>règle métier</strong> (un <code>int</code> qui doit rester positif, un <code>string</code> qui doit être un email…) devient une classe.</p>
+                    <p>Un primitif qui porte une <strong>règle métier</strong> (un slug, une latitude, un horaire…) devient une classe.</p>
                     <p class="fragment">Tirée des <strong>9 règles de Jeff Bay</strong> (<em>ThoughtWorks Anthology</em>, 2008) — un entraînement, pas un dogme.</p>
                     <p class="fragment small-text">Le parallèle sportif : une contrainte volontaire qu'on s'impose pour gagner en <em>force structurelle</em>.</p>
                 </div>
@@ -892,97 +676,6 @@ final readonly class Latitude {
                          style="max-width: 320px; width: 100%; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);">
                 </div>
             </div>
-        </section>
-
-        <section>
-            <h2>Pourquoi <code>int</code> et pas <code>float</code> ?</h2>
-<pre><code class="php" data-trim>
-var_dump(0.1 + 0.2);
-// float(0.30000000000000004)
-</code></pre>
-            <p class="fragment">Floating point + argent = mauvaise idée.</p>
-            <p class="fragment">Toujours stocker en plus petite unité (centimes) en <code>int</code>.</p>
-            <p class="fragment">Ou utiliser <code>bcmath</code> / <code>brick/money</code> pour les besoins fins.</p>
-        </section>
-
-        <section>
-            <h2>Identifiants typés</h2>
-<pre><code class="php" data-trim>
-final readonly class UserId {
-    public function __construct(public string $value) {
-        if (!Uuid::isValid($value)) {
-            throw new InvalidArgumentException("UUID invalide");
-        }
-    }
-
-    public static function generate(): self {
-        return new self(Uuid::v7()->toRfc4122());
-    }
-
-    public function equals(self $other): bool {
-        return $this->value === $other->value;
-    }
-}
-</code></pre>
-            <p class="fragment">Impossible de passer un <code>OrderId</code> là où un <code>UserId</code> est attendu.</p>
-        </section>
-
-        <section>
-            <h2>Enums (PHP 8.1)</h2>
-            <p>L'arme ultime contre les <em>magic strings</em>.</p>
-<pre><code class="php" data-trim>
-// Avant
-class OrderStatus {
-    public const PENDING = 'pending';
-    public const APPROVED = 'approved';
-    public const REJECTED = 'rejected';
-}
-
-function process(string $status): void { /* ... */ }
-process('apporved'); // Typo silencieuse
-</code></pre>
-        </section>
-
-        <section>
-            <h2>Backed enums</h2>
-<pre><code class="php" data-trim>
-enum OrderStatus: string {
-    case Pending  = 'pending';
-    case Approved = 'approved';
-    case Rejected = 'rejected';
-}
-
-function process(OrderStatus $status): void { /* ... */ }
-
-process(OrderStatus::Approved);  // ✅
-process('approved');             // TypeError
-process(OrderStatus::from('approved')); // ✅
-</code></pre>
-            <p class="fragment">Sérialisation transparente, comparaison par identité.</p>
-        </section>
-
-        <section style="font-size: 0.9em;">
-            <h2>Comportement sur enums</h2>
-<pre><code class="php" data-trim>
-enum OrderStatus: string {
-    case Pending  = 'pending';
-    case Approved = 'approved';
-    case Rejected = 'rejected';
-
-    public function label(): string {
-        return match($this) {
-            self::Pending  => 'En attente',
-            self::Approved => 'Approuvé',
-            self::Rejected => 'Rejeté',
-        };
-    }
-
-    public function isFinal(): bool {
-        return $this !== self::Pending;
-    }
-}
-</code></pre>
-            <p class="fragment"><code>match</code> est exhaustif : ajoutez un case, PHPStan vous prévient.</p>
         </section>
 
         <section>
@@ -997,7 +690,7 @@ enum OrderStatus: string {
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 6 — NULLABILITÉ                                      -->
+        <!-- SECTION 7 — NULLABILITÉ                                      -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #fce7f3, #fdf2f8)">
@@ -1006,94 +699,30 @@ enum OrderStatus: string {
             <p class="section-meta">« The billion dollar mistake » — Tony Hoare, 2009</p>
         </section>
 
-        <section>
-            <h2>Le problème de <code>null</code></h2>
+        <section style="font-size: 0.8em;">
+            <h2>« The billion dollar mistake », version Pathé</h2>
+            <p class="small-text">Tony Hoare regrettait d'avoir inventé <code>null</code> en 1965. L'API Pathé a trouvé pire : <strong>deux</strong> façons de dire « rien ».</p>
 <pre><code class="php" data-trim>
-$user = $repository->find($id);
-$name = $user->getName();
-// TypeError: Call to a member function getName() on null
-</code></pre>
-            <p class="fragment"><code>null</code> est un état parmi <em>tous les autres</em>.</p>
-            <p class="fragment">Mais on l'oublie systématiquement.</p>
-        </section>
-
-        <section>
-            <h2>L'opérateur nullsafe (PHP 8.0)</h2>
-            <div class="two-col">
-                <div>
-                    <h3>Avant</h3>
-<pre><code class="php" data-trim>
-$country = null;
-if ($user !== null) {
-    $addr = $user->address;
-    if ($addr !== null) {
-        $country = $addr->country;
-    }
+// contentRating vaut soit un objet, soit [] — jamais null
+if (empty($show['contentRating'])) {
+    // ...déclenché par [] ET par un objet vide malformé.
+    // Lequel des deux vient de se produire ? Aucune idée.
 }
 </code></pre>
-                </div>
-                <div>
-                    <h3>Après</h3>
-<pre><code class="php" data-trim>
-$country = $user
-    ?->address
-    ?->country;
-</code></pre>
-                </div>
-            </div>
-            <p class="fragment">Mais attention : <code>?-></code> est un <em>pansement</em>, pas un design.</p>
+            <p class="fragment">On normalise <strong>une fois</strong>, à la frontière, vers une seule représentation : <code>?ContentRating</code>.</p>
+        </section>
+
+        <section style="font-size: 0.8em;">
+            <h2>Le <code>null</code> qui ne veut rien dire</h2>
+            <p>Extrait, tel quel, de la doc de <code>Zone.zoneId</code> :</p>
+            <blockquote class="quote-block">
+                « Observé <code>null</code> pour la zone <code>idf</code>, et <code>"FR_FR"</code> pour la zone <code>dijon</code> — signification non déterminée à partir des données seules. »
+            </blockquote>
+            <p class="fragment"><code>null</code> n'est pas un design. C'est l'aveu qu'on ne sait pas ce que représente la valeur.</p>
+            <p class="fragment">Donnez-lui un vrai type — ou supprimez-le. Ne laissez pas l'ambiguïté fuir dans votre domaine.</p>
         </section>
 
         <section>
-            <h2>Le piège du nullsafe</h2>
-<pre><code class="php" data-trim>
-$total = $cart?->items?->reduce(...)?->total ?? 0;
-//                                          ^^
-// Vous masquez 4 cas d'erreur différents.
-</code></pre>
-            <p class="fragment">Trop de <code>?-></code> = vous avez un problème d'optionalité dans votre modèle.</p>
-            <p class="fragment">Demandez-vous : ces objets <em>devraient-ils</em> être nullables ?</p>
-        </section>
-
-        <section style="font-size: 0.7em;">
-            <h2>Le piège déplié</h2>
-            <p><code>$total = $cart?->items?->reduce(...)?->total ?? 0;</code> est équivalent à :</p>
-            <div class="two-col" style="grid-template-columns: 1.1fr 1fr;">
-                <div>
-<pre><code class="php" data-trim>
-function totalOf(?Cart $cart): int {
-    if ($cart === null) {
-        return 0;
-    }
-    if ($cart->items === null) {
-        return 0;
-    }
-    $reduced = $cart->items->reduce(/* … */);
-    if ($reduced === null) {
-        return 0;
-    }
-    if ($reduced->total === null) {
-        return 0;
-    }
-    return $reduced->total;
-}
-</code></pre>
-                </div>
-                <div>
-                    <h3>5 chemins de sortie</h3>
-                    <ol style="font-size: 0.9em;">
-                        <li class="fragment"><code>$cart</code> est <code>null</code> → <code>0</code></li>
-                        <li class="fragment"><code>$cart-&gt;items</code> est <code>null</code> → <code>0</code></li>
-                        <li class="fragment"><code>reduce()</code> renvoie <code>null</code> → <code>0</code></li>
-                        <li class="fragment"><code>-&gt;total</code> est <code>null</code> → <code>0</code></li>
-                        <li class="fragment">Tout est défini → la vraie valeur</li>
-                    </ol>
-                    <p class="fragment small-text" style="margin-top: 1em;"><strong>4 entrées</strong> distinctes produisent la <strong>même sortie</strong> (<code>0</code>) — impossible de savoir <em>laquelle</em> a échoué en post-mortem.</p>
-                </div>
-            </div>
-        </section>
-
-        <section style="font-size: 0.9em;">
             <h2>Null Object pattern</h2>
 <pre><code class="php" data-trim>
 interface Logger {
@@ -1112,68 +741,49 @@ class Service {
     ) {}
 }
 </code></pre>
-            <p class="fragment">Pas besoin de <code>if ($this->logger !== null)</code> partout.</p>
-            <p class="fragment small-text">Possible grâce à <em>new in initializers</em> (PHP 8.1).</p>
+            <p class="fragment small-text">Pas besoin de <code>if ($this->logger !== null)</code> partout. Possible grâce à <em>new in initializers</em> (PHP 8.1).</p>
         </section>
 
-        <section>
-            <h2>Évitez de retourner <code>null</code></h2>
+        <section style="font-size: 0.85em;">
+            <h2>Distinguez <code>find()</code> de <code>get()</code></h2>
             <div class="two-col">
                 <div>
-                    <h3 class="bad">❌</h3>
+                    <h3 class="bad">❌ Ambigu</h3>
 <pre><code class="php" data-trim>
-public function find(
-    UserId $id,
-): ?User {
-    // appelant doit
-    // gérer null
+public function findShow(
+    ShowSlug $slug,
+): ?Show {
+    // l'appelant doit gérer null
 }
 </code></pre>
                 </div>
                 <div>
-                    <h3 class="good">✅</h3>
+                    <h3 class="good">✅ Explicite</h3>
 <pre><code class="php" data-trim>
-public function get(
-    UserId $id,
-): User {
-    return $this->find($id)
-        ?? throw new UserNotFoundException($id);
+public function getShow(
+    ShowSlug $slug,
+): Show {
+    return $this->findShow($slug)
+        ?? throw new ShowNotFoundException($slug);
 }
 </code></pre>
                 </div>
             </div>
-            <p class="fragment">Distinguez <code>find()</code> (peut échouer) de <code>get()</code> (garanti).</p>
-        </section>
-
-        <section>
-            <h2><code>throw</code> comme expression (PHP 8.0)</h2>
-<pre><code class="php" data-trim>
-// Idéal dans les expressions ternaires et null-coalescing
-$email = $request->get('email')
-    ?? throw new BadRequest('email manquant');
-
-$user = $users[$id]
-    ?? throw new UserNotFoundException($id);
-
-$status = $validStatuses[$input]
-    ?? throw new InvalidStatusException($input);
-</code></pre>
-            <p class="fragment">Lisible, ciblé, échec immédiat.</p>
+            <p class="fragment"><code>find()</code> peut échouer. <code>get()</code> est garanti. L'appelant choisit le bon.</p>
         </section>
 
         <section>
             <h2>Récap section 5</h2>
             <ul>
                 <li class="fragment">✅ Si quelque chose ne peut pas être null, ne le déclarez pas nullable</li>
-                <li class="fragment">✅ Nullsafe avec parcimonie</li>
+                <li class="fragment">✅ Une seule représentation canonique de « rien », normalisée à la frontière</li>
                 <li class="fragment">✅ Null Object plutôt que <code>?Logger</code></li>
-                <li class="fragment">✅ <code>throw</code> dans les expressions pour fail fast</li>
-                <li class="fragment">❌ <code>?->?->?->?-></code> est un signal d'alarme</li>
+                <li class="fragment">❌ Un <code>null</code> dont personne ne sait ce qu'il signifie</li>
             </ul>
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 7 — ENCAPSULATION                                    -->
+        <!-- SECTION 8 — ENCAPSULATION                                    -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #e9d5ff, #faf5ff)">
@@ -1182,167 +792,80 @@ $status = $validStatuses[$input]
             <p class="section-meta">Tell, don't ask</p>
         </section>
 
-        <section style="font-size: 0.8em;">
-            <h2><code>final</code> par défaut</h2>
+        <section style="font-size: 0.75em;">
+            <h2><code>final</code> par défaut, interface pour dépendre</h2>
+            <div class="two-col">
+                <div>
+                    <h3><code>final</code></h3>
 <pre><code class="php" data-trim>
-final class UserService {
+final class PatheApiClient {
     public function __construct(
-        private UserRepository $repo,
+        private HttpClient $http,
     ) {}
 }
 </code></pre>
-            <p class="fragment">Pourquoi ?</p>
-            <ul>
-                <li class="fragment">L'héritage n'est <strong>presque jamais</strong> ce que vous voulez</li>
-                <li class="fragment">Préférez la composition</li>
-                <li class="fragment">Si quelqu'un étend votre classe, vous ne pouvez plus la refactorer</li>
-                <li class="fragment">Marquez explicitement les classes <em>conçues</em> pour l'héritage</li>
-            </ul>
-        </section>
-
-        <section style="font-size: 0.9em;">
-            <h2>« Mais on ne peut plus mocker ! »</h2>
-            <p class="fragment">Mockez les <strong>interfaces</strong>, pas les classes.</p>
-<pre class="fragment"><code class="php" data-trim>
-interface UserRepository {
-    public function find(UserId $id): ?User;
+                    <p class="small-text">L'héritage n'est presque jamais ce que vous voulez.</p>
+                </div>
+                <div>
+                    <h3>Mais mockable</h3>
+<pre><code class="php" data-trim>
+interface ShowRepository {
+    public function getShow(ShowSlug $s): Show;
 }
 
-final class DoctrineUserRepository implements UserRepository {
-    // implémentation
-}
-
-// En test
-$mock = $this->createMock(UserRepository::class);
+$mock = $this->createMock(ShowRepository::class);
 </code></pre>
-            <p class="fragment">Si une classe n'a pas d'interface, demandez-vous : devrait-elle en avoir une ?</p>
+                    <p class="small-text">Mockez les <strong>interfaces</strong>, pas les classes.</p>
+                </div>
+            </div>
         </section>
 
         <section>
             <h2>Property hooks (PHP 8.4) 🎉</h2>
-            <p>Validation et transformation au plus près de la donnée.</p>
+            <p class="small-text">Le string <code>"348"</code> de l'API, validé au plus près de la donnée.</p>
 <pre><code class="php" data-trim>
-class User {
-    public string $email {
-        set(string $value) {
-            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                throw new InvalidArgumentException("Email invalide");
+class Auditorium {
+    public int $capacity {
+        set(string $raw) {
+            if (!ctype_digit($raw)) {
+                throw new InvalidArgumentException(
+                    "Capacité invalide : {$raw}"
+                );
             }
-            $this->email = strtolower($value);
+            $this->capacity = (int) $raw;
         }
     }
 }
 
-$u = new User();
-$u->email = 'Alice@Example.com';
-echo $u->email; // alice@example.com
+$a = new Auditorium();
+$a->capacity = '348'; // le string de l'API, entre ici
+echo $a->capacity;    // 348 (int), partout ailleurs
 </code></pre>
         </section>
 
-        <section style="font-size: 0.8em;">
-            <h2>Property hooks : computed properties</h2>
-<pre><code class="php" data-trim>
-class Rectangle {
-    public function __construct(
-        public float $width,
-        public float $height,
-    ) {}
-
-    public float $area {
-        get => $this->width * $this->height;
-    }
-
-    public float $perimeter {
-        get => 2 * ($this->width + $this->height);
-    }
-}
-
-echo (new Rectangle(3, 4))->area; // 12
-</code></pre>
-            <p class="fragment">Plus besoin de <code>getArea()</code> qui ne fait que calculer.</p>
-        </section>
-
-        <section style="font-size: 0.8em;">
-            <h2>Named constructors</h2>
-<pre><code class="php" data-trim>
-final readonly class User {
-    private function __construct(
-        public UserId $id,
-        public Email $email,
-        public DateTimeImmutable $createdAt,
-    ) {}
-
-    public static function register(Email $email): self {
-        return new self(UserId::generate(), $email, new DateTimeImmutable());
-    }
-
-    public static function reconstitute(
-        UserId $id, Email $email, DateTimeImmutable $createdAt,
-    ): self {
-        return new self($id, $email, $createdAt);
-    }
-}
-</code></pre>
-            <p class="fragment">Le <code>__construct</code> privé empêche les états invalides.</p>
-        </section>
-
-        <section>
-            <h2>Tell, don't ask</h2>
+        <section style="font-size: 0.75em;">
+            <h2>Tell, don't ask &amp; Law of Demeter</h2>
             <div class="two-col">
                 <div>
-                    <h3 class="bad">❌ Ask</h3>
+                    <h3 class="bad">❌</h3>
 <pre><code class="php" data-trim>
-if ($order->getStatus() === 'pending'
-    && $order->getTotal() > 0
-    && !$order->isPaid()) {
-
-    $order->setStatus('approved');
-    $order->setApprovedAt(now());
-    $emailer->send($order->getEmail());
+if ($showtime->status === 'available'
+    && $showtime->reservabilityEnd > now()) {
+    $emailer->notify($cinema->theaters[0]
+        ->gpsPosition->x);
 }
 </code></pre>
                 </div>
                 <div>
-                    <h3 class="good">✅ Tell</h3>
+                    <h3 class="good">✅</h3>
 <pre><code class="php" data-trim>
-$order->approve($emailer);
-</code></pre>
-                    <p class="fragment small-text">L'objet sait ce qu'il doit faire.</p>
-                </div>
-            </div>
-            <p class="fragment">Les conditions métier vivent dans le <em>domaine</em>, pas dans le service.</p>
-        </section>
-
-        <section>
-            <h2>Pas de getters publics gratuits</h2>
-<pre><code class="php" data-trim>
-// ❌ Anti-pattern : objet anémique
-final class User {
-    public function getName(): string { return $this->name; }
-    public function setName(string $n): void { $this->name = $n; }
-    public function getEmail(): string { return $this->email; }
-    public function setEmail(string $e): void { $this->email = $e; }
-    public function getAge(): int { return $this->age; }
-    public function setAge(int $a): void { $this->age = $a; }
-    // ... 30 lignes plus tard ...
+if ($showtime->isBookable()) {
+    $emailer->notify($cinema->latitude());
 }
 </code></pre>
-            <p class="fragment">Un objet « sac de données » est un <strong>struct</strong>, pas une classe.</p>
-            <p class="fragment">Si c'est vraiment un struct, autant utiliser <code>readonly class</code>.</p>
-        </section>
-
-        <section>
-            <h2>Law of Demeter</h2>
-            <p>Ne parlez qu'à vos <em>amis directs</em>.</p>
-<pre><code class="php" data-trim>
-// ❌
-$user->getCompany()->getAddress()->getCity()->getZip();
-
-// ✅
-$user->companyZip(); // l'objet sait répondre
-</code></pre>
-            <p class="fragment">Chaque <code>-></code> traversé crée un couplage.</p>
-            <p class="fragment">Et si <code>getCompany()</code> peut retourner null ? Et si <code>getAddress()</code> aussi ?</p>
+                </div>
+            </div>
+            <p class="fragment">Chaque <code>-></code> traversé, et chaque condition dupliquée, crée un couplage. L'objet doit savoir répondre.</p>
         </section>
 
         <section style="font-size: 0.65em;">
@@ -1351,7 +874,7 @@ $user->companyZip(); // l'objet sait répondre
                 <div>
                     <p style="font-size: 1.25em; margin-bottom: 0.8em;"><strong style="color: #c2410c;">« One Dot Per Line »</strong></p>
                     <p>Une seule flèche <code>-&gt;</code> par expression — le calisthenic qui rend la <strong>Law of Demeter</strong> mécanique : si vous traversez deux objets, c'est qu'il manque une méthode quelque part.</p>
-                    <p class="fragment">Tirée des <strong>9 règles de Jeff Bay</strong> (<em>ThoughtWorks Anthology</em>, 2008) — même famille que la règle n°3 (<code>PositiveInteger</code>).</p>
+                    <p class="fragment">Tirée des <strong>9 règles de Jeff Bay</strong> (<em>ThoughtWorks Anthology</em>, 2008) — même famille que la règle n°3.</p>
                     <p class="fragment small-text">La discipline du sportif : un mouvement à la fois, propre — pas de chaîne acrobatique qui masque les efforts intermédiaires.</p>
                 </div>
                 <div style="text-align: center;">
@@ -1368,208 +891,118 @@ $user->companyZip(); // l'objet sait répondre
                 <li class="fragment">✅ <code>final</code> par défaut</li>
                 <li class="fragment">✅ Interfaces pour les dépendances</li>
                 <li class="fragment">✅ Property hooks pour la validation in-class</li>
-                <li class="fragment">✅ Named constructors pour les cas d'usage</li>
                 <li class="fragment">✅ Tell, don't ask</li>
-                <li class="fragment">❌ Pas de getter/setter automatique</li>
+                <li class="fragment">❌ Pas de getter/setter automatique, pas de chaîne <code>-&gt;-&gt;-&gt;</code></li>
             </ul>
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 8 — EXCEPTIONS                                       -->
+        <!-- SECTION 9 — EXCEPTIONS                                       -->
         <!-- ============================================================ -->
 
-        <section data-background-gradient="linear-gradient(to bottom right, #fed7aa, #fff7ed)" style="font-size: 0.8em;">
+        <section data-background-gradient="linear-gradient(to bottom right, #fed7aa, #fff7ed)">
             <h2 class="section-title">Partie 7</h2>
             <h1 class="section-main">Exceptions et résultats</h1>
             <p class="section-meta">Échouer avec élégance et précision</p>
         </section>
 
-        <section style="font-size: 0.8em;">
-            <h2>Quand throw ?</h2>
-            <ul>
-                <li class="fragment"><strong>Pré-condition violée</strong> → invariant cassé (l'appelant a triché)</li>
-                <li class="fragment"><strong>État système incohérent</strong> → bug réel</li>
-                <li class="fragment"><strong>Opération impossible</strong> → ressource attendue présente mais manquante</li>
-            </ul>
-            <p class="fragment quote-attrib">Pas pour piloter le flow métier <em>normal</em> — pour ça : retour <code>?T</code> ou <code>Result&lt;T, E&gt;</code>.</p>
-            <p class="fragment small-text">Convention : <code>find*()</code> peut retourner <code>null</code> (lookup <em>exploratoire</em>) ; <code>get*()</code>/<code>load*()</code> <strong>lève</strong> (lookup <em>assertif</em> — l'absence est un bug ou une rupture d'invariant). C'est dans ce dernier cas qu'un <code>UserNotFoundException</code> est légitime.</p>
-        </section>
-
-        <section style="font-size: 0.6em;">
+        <section style="font-size: 0.65em;">
             <h2>⚠️ Le défaut de PHP : exceptions <em>unchecked</em></h2>
-            <p>Une signature PHP ne déclare <strong>jamais</strong> ce qu'une méthode peut lever :</p>
+            <p class="small-text">On lève une exception pour une pré-condition violée, un état système incohérent, une opération impossible — jamais pour piloter le flow normal.</p>
 <pre><code class="php" data-trim>
-public function placeOrder(Cart $cart): Order {
-    // ↑ la signature ne dit rien des exceptions possibles
-    //   pourtant cette méthode peut lever :
-    //     InsufficientFundsException, OutOfStockException,
-    //     PaymentDeclinedException, InvalidCouponException, …
+public function placeBooking(Cart $cart): Booking {
+    // ↑ la signature ne dit rien des exceptions possibles :
+    //   BotBlockedException, ShowNotFoundException,
+    //   NoScreeningAvailableException, …
 }
 </code></pre>
-            <p class="fragment">L'appelant doit lire l'implémentation (et toutes ses transitives) pour deviner quoi <code>catch</code>er.</p>
             <table class="cost-table" style="font-size: 0.9em; margin-top: 0.6em;">
-                <thead>
-                    <tr><th>Langage</th><th>Modèle</th><th>Conséquence</th></tr>
-                </thead>
+                <thead><tr><th>Langage</th><th>Modèle</th><th>Conséquence</th></tr></thead>
                 <tbody>
-                    <tr class="fragment"><td><strong>Java, Swift</strong></td><td>Checked (<code>throws X</code>, <code>try</code>)</td><td>Compilo force la déclaration ou le <code>catch</code></td></tr>
-                    <tr class="fragment"><td><strong>C#, Kotlin, JS, Python, PHP</strong></td><td>Unchecked</td><td>Convention seulement — rien n'est garanti</td></tr>
-                    <tr class="fragment"><td><strong>Rust, Haskell, OCaml</strong></td><td>Pas d'exceptions</td><td><code>Result&lt;T, E&gt;</code> / <code>Either</code> obligatoires dans la signature</td></tr>
+                    <tr class="fragment"><td><strong>Java, Swift</strong></td><td>Checked</td><td>Le compilo force la déclaration</td></tr>
+                    <tr class="fragment"><td><strong>PHP, JS, Python…</strong></td><td>Unchecked</td><td>Convention seulement</td></tr>
+                    <tr class="fragment"><td><strong>Rust, Haskell</strong></td><td>Pas d'exceptions</td><td><code>Result&lt;T, E&gt;</code> obligatoire dans la signature</td></tr>
                 </tbody>
             </table>
-            <p class="fragment small-text" style="margin-top: 0.8em;"><strong>Parade en PHP :</strong> annoter <code>@throws</code> en PHPDoc + activer les <em>throws rules</em> de <code>PHPStan</code> pour exiger déclaration et propagation.</p>
+            <p class="fragment small-text">Parade en PHP : <code>@throws</code> en PHPDoc + les <em>throws rules</em> de PHPStan.</p>
         </section>
 
-        <section>
-            <h2>Custom exceptions</h2>
-            <div class="two-col">
-                <div>
-                    <h3 class="bad">❌</h3>
-<pre><code class="php" data-trim>
-throw new \Exception(
-    "User not found"
-);
+        <section style="font-size: 0.75em;">
+            <h2>Une hiérarchie, avec un vrai cas</h2>
+            <p class="small-text">La couche anti-bot de Pathé répond, telle quelle :</p>
+<pre><code class="json" data-trim>
+{ "error": "Error from IP 2a01:e0a:1229:a700:f9a8:8d45:e86b:f8c8 (ref: 18.6857c817.1785576411.100422a5)" }
 </code></pre>
-                    <p class="small-text">Impossible à catcher précisément.</p>
-                </div>
-                <div>
-                    <h3 class="good">✅</h3>
-<pre><code class="php" data-trim>
-throw new UserNotFoundException(
-    $userId
-);
-</code></pre>
-                    <p class="small-text">Classifiable, typée, avec contexte.</p>
-                </div>
-            </div>
-        </section>
+<pre class="fragment"><code class="php" data-trim>
+abstract class PatheApiException extends RuntimeException {}
 
-        <section>
-            <h2>Hiérarchie d'exceptions</h2>
-<pre><code class="php" data-trim>
-namespace App\Domain\Exception;
-
-abstract class DomainException extends \RuntimeException {}
-
-abstract class NotFoundException extends DomainException {}
-
-final class UserNotFoundException extends NotFoundException {
-    public function __construct(public readonly UserId $userId) {
-        parent::__construct("User not found: {$userId->value}");
+final class BotBlockedException extends PatheApiException {
+    public function __construct(
+        public readonly string $ip,
+        public readonly string $ref,
+    ) {
+        parent::__construct("Bloqué par Akamai (ref: {$ref})");
     }
 }
 </code></pre>
-            <p class="fragment">On peut catcher au bon niveau d'abstraction.</p>
+            <p class="fragment">On catche au bon niveau d'abstraction — <code>PatheApiException</code>, ou précisément <code>BotBlockedException</code>.</p>
         </section>
 
         <section>
             <h2>Le pattern Result</h2>
-            <p>Pour les cas d'erreur <em>attendus</em> (validation, par exemple).</p>
+            <p class="small-text">Pour les cas d'erreur <em>attendus</em> (validation d'un slug saisi par un utilisateur, par exemple).</p>
 <pre><code class="php" data-trim>
 abstract readonly class Result {
     public static function ok(mixed $value): SuccessResult { /* ... */ }
     public static function fail(string $error): FailureResult { /* ... */ }
 }
 
-$result = $validator->validate($input);
+$result = ShowSlug::validate($userInput);
 match (true) {
-    $result instanceof SuccessResult => $this->process($result->value),
+    $result instanceof SuccessResult => $this->search($result->value),
     $result instanceof FailureResult => $this->reportError($result->error),
 };
 </code></pre>
             <p class="fragment">Plus explicite que les exceptions pour les chemins prévus.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.85em;">
             <h2><code>#[NoDiscard]</code> (PHP 8.5) 🎉</h2>
-            <p>Le complément parfait du pattern Result.</p>
+            <p class="small-text">Le complément parfait du pattern Result — et des <code>with*()</code> immuables.</p>
 <pre><code class="php" data-trim>
-#[NoDiscard("Le résultat de la validation doit être vérifié")]
-function validate(Input $input): Result {
-    // ...
+readonly class Showtime {
+    #[NoDiscard("Showtime est immuable, withStatus() retourne une nouvelle instance")]
+    public function withStatus(BookingStatus $s): self {
+        return new self($this->time, $s);
+    }
 }
 
-validate($input);
-// Warning: The return value of validate() should be used
-//          (NoDiscard: « Le résultat de la validation doit être vérifié »)
-
-$r = validate($input); // ✅ OK
+$showtime->withStatus(BookingStatus::SoldOut);
+// ⚠️ Warning: the return value should be used
 </code></pre>
             <p class="fragment">Fini les retours ignorés par inadvertance.</p>
         </section>
 
         <section style="font-size: 0.8em;">
-            <h2><code>#[NoDiscard]</code> : cas d'usage</h2>
-            <ul>
-                <li class="fragment">Fonctions de validation → leur résultat doit être consommé</li>
-                <li class="fragment">Builders / Fluent API → on s'attend à chaîner ou stocker</li>
-                <li class="fragment">Objets immuables retournés par <code>with*()</code></li>
-                <li class="fragment"><code>Result</code> / <code>Either</code> : pas de retour silencieux</li>
-            </ul>
-<pre class="fragment"><code class="php" data-trim>
-readonly class Money {
-    #[NoDiscard("Money est immuable, with*() retourne une nouvelle instance")]
-    public function withAmount(int $cents): self {
-        return new self($cents, $this->currency);
-    }
-}
-
-$money->withAmount(1000); // ⚠️ warning
-</code></pre>
-        </section>
-
-        <section>
-            <h2>Try/catch ciblé</h2>
-            <div class="two-col">
-                <div>
-                    <h3 class="bad">❌</h3>
+            <h2>Catch ciblé, re-throw avec contexte</h2>
 <pre><code class="php" data-trim>
 try {
-    // 50 lignes
-} catch (\Throwable $e) {
-    // soupir.
-}
-</code></pre>
-                </div>
-                <div>
-                    <h3 class="good">✅</h3>
-<pre><code class="php" data-trim>
-try {
-    $this->repo->save($u);
-} catch (UniqueConstraintException $e) {
-    throw new DuplicateEmailException(
-        $u->email,
+    $raw = $this->client->getRawShowtimes($show, $cinema);
+} catch (BotBlockedException $e) {
+    throw new ShowtimeFetchFailedException(
+        show: $show,
+        cinema: $cinema,
         previous: $e,
     );
 }
 </code></pre>
-                </div>
-            </div>
-            <p class="fragment">Catchez ce que vous savez <strong>traiter</strong>.</p>
-        </section>
-
-        <section>
-            <h2>Catch et re-throw avec contexte</h2>
-<pre><code class="php" data-trim>
-try {
-    $payment = $gateway->charge($order, $card);
-} catch (NetworkException $e) {
-    throw new PaymentFailedException(
-        orderId: $order->id,
-        reason: 'Réseau indisponible',
-        previous: $e,
-    );
-}
-</code></pre>
-            <p class="fragment">L'exception originale est préservée. Le contexte métier est ajouté.</p>
-            <p class="fragment">PHPStan / monitoring / logs apprécient.</p>
+            <p class="fragment">Catchez ce que vous savez <strong>traiter</strong>. L'exception originale est préservée, le contexte métier est ajouté.</p>
         </section>
 
         <section>
             <h2>Récap section 7</h2>
             <ul>
                 <li class="fragment">✅ Exceptions du domaine pour le métier</li>
-                <li class="fragment">✅ Exceptions techniques pour l'infra</li>
                 <li class="fragment">✅ Hiérarchie pour catcher au bon niveau</li>
                 <li class="fragment">✅ Re-throw avec contexte</li>
                 <li class="fragment">❌ <code>catch (\Throwable $e)</code> n'importe où</li>
@@ -1578,379 +1011,150 @@ try {
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 9 — OUTILS ET CI                                     -->
-        <!-- ============================================================ -->
-
-        <section data-background-gradient="linear-gradient(to bottom right, #e2e8f0, #f1f5f9)">
-            <h2 class="section-title">Partie 8</h2>
-            <h1 class="section-main">Outils &amp; CI</h1>
-            <p class="section-meta">Tout ce dont on a parlé, automatisé</p>
-        </section>
-
-        <section>
-            <h2>PHPStan / Psalm</h2>
-            <p>Analyse statique : c'est <em>gratuit</em>, c'est <em>maintenant</em>.</p>
-<pre><code class="yaml" data-trim>
-# phpstan.neon
-parameters:
-    level: 10                # max
-    paths:
-        - src/
-        - tests/
-    treatPhpDocTypesAsCertain: false
-    checkUninitializedProperties: true
-    checkMissingIterableValueType: true
-</code></pre>
-            <p class="fragment">Niveau 10 dès aujourd'hui. Pas plus tard. Maintenant.</p>
-        </section>
-
-        <section>
-            <h2>Échelle de strictness</h2>
-            <table class="cost-table">
-                <thead><tr><th>Niveau</th><th>Ce que vous gagnez</th></tr></thead>
-                <tbody>
-                <tr class="fragment"><td>0–2</td><td>Erreurs grossières (méthodes inexistantes)</td></tr>
-                <tr class="fragment"><td>3–5</td><td>Types des paramètres, types de retour</td></tr>
-                <tr class="fragment"><td>6–7</td><td>Nullabilité, types itérables précis</td></tr>
-                <tr class="fragment"><td>8</td><td>Appels/accès sur <code>nullable</code> détectés</td></tr>
-                <tr class="fragment"><td>9</td><td>Strict sur <code>mixed</code> (seul le passage est toléré)</td></tr>
-                <tr class="fragment"><td>10</td><td>Appels/accès sur types inconnus (max)</td></tr>
-                </tbody>
-            </table>
-        </section>
-
-        <section>
-            <h2>Architecture testing</h2>
-            <p>Les règles d'architecture s'oublient. Automatisez-les.</p>
-<pre><code class="php" data-trim>
-// PHPAT
-test('Domain ne dépend pas de Infrastructure')
-    ->expect(Classes::inNamespace('App\Domain'))
-    ->shouldNot()
-    ->dependOn(Classes::inNamespace('App\Infrastructure'));
-
-test('Toutes les classes Domain sont final')
-    ->expect(Classes::inNamespace('App\Domain'))
-    ->toBe()
-    ->final();
-</code></pre>
-            <p class="fragment">Aussi : <code>deptrac</code>, <code>phparkitect</code>.</p>
-        </section>
-
-        <section>
-            <h2>Mutation testing avec Infection</h2>
-            <p>« Mon code est-il <em>vraiment</em> couvert par les tests ? »</p>
-<pre><code class="bash" data-trim>
-vendor/bin/infection --threads=8 --min-msi=80
-</code></pre>
-            <ul>
-                <li class="fragment">Modifie aléatoirement votre code (un <code>+</code> en <code>-</code>, par ex.)</li>
-                <li class="fragment">Re-lance la suite</li>
-                <li class="fragment">Si les tests passent toujours… vous avez un trou</li>
-            </ul>
-            <p class="fragment">Coverage à 100% ≠ tests à 100%.</p>
-        </section>
-
-        <section style="font-size: 0.8em;">
-            <h2>Pipeline CI minimum vital</h2>
-            <ol>
-                <li class="fragment"><code>composer install --no-dev</code> en prod, <code>--dev</code> en CI</li>
-                <li class="fragment"><code>vendor/bin/phpstan analyse --level=10</code></li>
-                <li class="fragment"><code>vendor/bin/phpcs</code> (PSR-12 minimum)</li>
-                <li class="fragment"><code>vendor/bin/rector --dry-run</code> (cohérence)</li>
-                <li class="fragment"><code>vendor/bin/phpunit</code> (tests)</li>
-                <li class="fragment"><code>vendor/bin/infection</code> (mutation)</li>
-                <li class="fragment"><code>vendor/bin/phpat</code> (architecture)</li>
-            </ol>
-            <p class="fragment">Tout doit passer. Pas de « on corrigera plus tard ».</p>
-        </section>
-
-        <!-- ============================================================ -->
-        <!-- SECTION 10 — ANTI-PATTERNS                                   -->
-        <!-- ============================================================ -->
-
-        <section data-background-gradient="linear-gradient(to bottom right, #fecaca, #fef2f2)">
-            <h2 class="section-title">Partie 9</h2>
-            <h1 class="section-main">Le top 10 des anti-patterns</h1>
-            <p class="section-meta">Ce qu'il faut <em>désapprendre</em></p>
-        </section>
-
-        <section>
-            <h2>#1 — <code>array</code> qui veut être un objet</h2>
-<pre><code class="php" data-trim>
-$user = [
-    'id'    => 42,
-    'name'  => 'Alice',
-    'email' => 'alice@example.com',
-    'roles' => ['admin', 'user'],
-];
-$user['emial']; // typo silencieuse, null retourné
-</code></pre>
-            <p class="fragment">Un objet. Tout de suite. Toujours.</p>
-        </section>
-
-        <section>
-            <h2>#2 — Le <code>God object</code></h2>
-<pre><code class="php" data-trim>
-class UserManager {
-    public function create(...) {}
-    public function update(...) {}
-    public function delete(...) {}
-    public function sendEmail(...) {}
-    public function generateReport(...) {}
-    public function exportToCsv(...) {}
-    public function login(...) {}
-    // ... 47 méthodes plus tard ...
-}
-</code></pre>
-            <p class="fragment">Si vous hésitez sur le nom, vous hésitez sur la responsabilité.</p>
-        </section>
-
-        <section>
-            <h2>#3 — Le <code>?bool</code> retourné</h2>
-<pre><code class="php" data-trim>
-public function isValid(): ?bool {
-    // true, false, ou null ?
-    // Qu'est-ce qu'un null ici ?
-}
-</code></pre>
-            <p class="fragment">Trois états : ❌. Deux états : ✅.</p>
-            <p class="fragment">Si l'absence d'information a un sens, utilisez un enum.</p>
-        </section>
-
-        <section>
-            <h2>#4 — La constante magique</h2>
-<pre><code class="php" data-trim>
-if ($status === 1) { /* ... */ }
-if ($status === 2) { /* ... */ }
-if ($status === 3) { /* ... */ }
-</code></pre>
-            <p class="fragment">Vous savez ce que vaut <code>3</code> ? Bien.</p>
-            <p class="fragment">Et dans 6 mois ?</p>
-            <p class="fragment">Enums. Toujours enums.</p>
-        </section>
-
-        <section>
-            <h2>#5 — Le retour booléen ambigu</h2>
-<pre><code class="php" data-trim>
-public function send(Email $email): bool {
-    // true = succès ? ou true = pas d'erreur ?
-    // false = erreur ? ou false = ignoré ?
-    return $this->client->send($email);
-}
-</code></pre>
-            <p class="fragment">Préférez : succès silencieux + exception ciblée.</p>
-            <p class="fragment">Ou un type Result.</p>
-        </section>
-
-        <section>
-            <h2>#6 — Le statique partout</h2>
-<pre><code class="php" data-trim>
-class UserService {
-    public static function create(array $data): User { /* ... */ }
-    public static function send(string $email): void { /* ... */ }
-}
-
-UserService::create(['name' => 'Alice']);
-// → comment je teste ça ?
-// → comment je remplace l'implémentation ?
-// → couplage maximal
-</code></pre>
-            <p class="fragment">Le statique tue l'injection de dépendances.</p>
-            <p class="fragment">Réservé aux fonctions vraiment pures (parseurs, formatters, factories).</p>
-        </section>
-
-        <section>
-            <h2>#7 — Le commentaire-béquille</h2>
-<pre><code class="php" data-trim>
-// TODO: refactorer plus tard
-// HACK: ne pas toucher, magie noire
-// FIXME: cassé depuis 2019
-
-// $foo = 42; // ancienne valeur, ne pas effacer
-// ... 200 lignes commentées ...
-</code></pre>
-            <p class="fragment">Le code mort, on l'efface. Git s'en souviendra.</p>
-            <p class="fragment">Les TODOs vivent dans le ticketing, pas dans le code.</p>
-        </section>
-
-        <section>
-            <h2>#8 — La méthode-frigo</h2>
-<pre><code class="php" data-trim>
-public function process(Order $order): void {
-    // 50 lignes
-    if ($order->isPaid()) {
-        // 30 lignes
-        foreach ($order->items as $item) {
-            // 40 lignes
-            if ($item->isShipped()) {
-                // ...
-            }
-        }
-    }
-}
-</code></pre>
-            <p class="fragment">Profondeur d'indentation > 3 = méthode à découper.</p>
-            <p class="fragment">Early return + extraction de méthode.</p>
-        </section>
-
-        <section>
-            <h2>#9 — Le booléen de paramètre</h2>
-<pre><code class="php" data-trim>
-$user->save(true);
-// true quoi ? validate ? force ? async ? je sais pas.
-
-$user->save(validate: true);              // un peu mieux (PHP 8.0)
-$user->saveWithValidation();              // mieux encore
-$user->save(SaveStrategy::WithValidation); // 💎
-</code></pre>
-            <p class="fragment">Un booléen en paramètre cache souvent <em>deux méthodes</em>.</p>
-        </section>
-
-        <section>
-            <h2>#10 — L'héritage de confort</h2>
-<pre><code class="php" data-trim>
-abstract class AbstractBaseEntityServiceFactoryManager {
-    // 800 lignes
-}
-
-class UserService extends AbstractBaseEntityServiceFactoryManager {
-    // Doit étendre. Pourquoi ? Personne ne sait.
-}
-</code></pre>
-            <p class="fragment">L'héritage crée le couplage le plus fort qui existe en OO.</p>
-            <p class="fragment">Composition > héritage. Sauf pour les types abstraits sémantiquement.</p>
-        </section>
-
-        <!-- ============================================================ -->
-        <!-- SECTION 11 — APPLICATION CONCRÈTE                            -->
+        <!-- SECTION 10 — MISE EN PRATIQUE                                -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #bbf7d0, #f0fdf4)">
-            <h2 class="section-title">Partie 10</h2>
+            <h2 class="section-title">Partie 8</h2>
             <h1 class="section-main">Mise en pratique</h1>
-            <p class="section-meta">Refactoring intégral d'un cas réel</p>
+            <p class="section-meta">Un refactoring complet, avec la vraie API Pathé</p>
         </section>
 
-        <section style="font-size: 0.9em;">
+        <section style="font-size: 0.85em;">
+            <h2>Le besoin</h2>
+            <p>Trouver la <strong>prochaine séance réservable</strong> d'un film, dans un cinéma donné.</p>
+            <p class="fragment small-text">Trois bizarreries de l'API à absorber :</p>
+            <ul>
+                <li class="fragment small-text"><code>"time": "2026-08-16 20:10:00"</code> — pas de l'ISO 8601</li>
+                <li class="fragment small-text"><code>"auditoriumCapacity": "348"</code> — un nombre, en string</li>
+                <li class="fragment small-text">réponse en <code>{}</code> ou en <code>[]</code> selon les cas</li>
+            </ul>
+        </section>
+
+        <section style="font-size: 0.85em;">
             <h2>Le code de départ</h2>
-<pre style="font-size: 0.611em;"><code class="php" data-trim>
-class UserService {
-    public function register($data) {
-        if (empty($data['email'])) return false;
-        if (empty($data['password'])) return false;
-        if (strlen($data['password']) < 8) return false;
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) return false;
+<pre><code class="php" data-trim>
+class ShowtimeFinder {
+    public function find($showSlug, $cinemaSlug) {
+        $r = $this->http->get("/show/$showSlug/showtimes/$cinemaSlug");
+        if (empty($r)) return false;
 
-        $user = $this->repo->findByEmail($data['email']);
-        if ($user) return null;
-
-        $user = new User();
-        $user->email = $data['email'];
-        $user->password = password_hash($data['password'], PASSWORD_DEFAULT);
-        $user->created_at = date('Y-m-d H:i:s');
-        $this->repo->save($user);
-
-        return $user->id;
+        foreach ($r as $date => $times) {
+            foreach ($times as $t) {
+                if ($t['status'] == 'available') {
+                    return $t; // array brut de l'API
+                }
+            }
+        }
+        return null;
     }
 }
 </code></pre>
             <p class="fragment">Combien de problèmes ?</p>
         </section>
 
-        <section style="font-size: 0.8em;">
+        <section style="font-size: 0.7em;">
             <h2>Les problèmes</h2>
             <ol>
-                <li class="fragment">Paramètre <code>$data</code> non typé</li>
-                <li class="fragment">Retour ambigu (<code>false</code> | <code>null</code> | <code>int</code>)</li>
-                <li class="fragment">Validation impérative dispersée</li>
-                <li class="fragment">Mutation directe des propriétés</li>
-                <li class="fragment">Date sous forme de string</li>
-                <li class="fragment">Pas d'exception : le caller doit deviner</li>
-                <li class="fragment">Pas de Value Object : <code>email</code>, <code>password</code> primitifs</li>
-                <li class="fragment">Pas de différence entre erreur métier et erreur technique</li>
+                <li class="fragment"><code>$showSlug</code>/<code>$cinemaSlug</code> non typés → inversion possible <span class="small-text">(Partie 4)</span></li>
+                <li class="fragment">Retour ambigu : <code>false</code> | <code>null</code> | <code>array</code> <span class="small-text">(Partie 2)</span></li>
+                <li class="fragment">Forme de réponse API non normalisée <span class="small-text">(Partie 2)</span></li>
+                <li class="fragment"><code>time</code> et <code>status</code> restent des <code>string</code> brutes <span class="small-text">(Partie 4)</span></li>
+                <li class="fragment">Comparaison <code>==</code> au lieu de <code>===</code></li>
+                <li class="fragment">Aucune exception : l'appelant doit deviner <span class="small-text">(Partie 5/7)</span></li>
+                <li class="fragment">Le champ métier « réservable » n'existe pas, il faut le redéduire partout <span class="small-text">(Partie 6)</span></li>
             </ol>
         </section>
 
-        <section>
-            <h2>Étape 1 : Value Objects</h2>
-<pre><code class="php" data-trim>
-final readonly class Email {
-    public function __construct(public string $value) {
-        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidEmailException($value);
-        }
-    }
-}
-
-final readonly class PlainPassword {
-    public function __construct(public string $value) {
-        if (strlen($value) < 8) {
-            throw new WeakPasswordException();
-        }
-    }
-}
-</code></pre>
-        </section>
-
-        <section>
-            <h2>Étape 2 : Command typée</h2>
-<pre><code class="php" data-trim>
-final readonly class RegisterUserCommand {
-    public function __construct(
-        public Email $email,
-        public PlainPassword $password,
-    ) {}
-}
-</code></pre>
-            <p class="fragment">Le contrat d'entrée est <strong>impossible à mal construire</strong>.</p>
-        </section>
-
         <section style="font-size: 0.8em;">
-            <h2>Étape 3 : Entité<br>(état d'agrégat)</h2>
+            <h2>Étape 1 : les Value Objects</h2>
 <pre><code class="php" data-trim>
-final class User {
+final readonly class ShowSlug {
+    public function __construct(public string $value) {
+        if (trim($value) === '') {
+            throw new InvalidArgumentException('Slug de film vide');
+        }
+    }
+}
+
+final readonly class CinemaSlug {
+    public function __construct(public string $value) {
+        if (trim($value) === '') {
+            throw new InvalidArgumentException('Slug de cinéma vide');
+        }
+    }
+}
+</code></pre>
+            <p class="fragment small-text">Deux classes quasi identiques, volontairement : dupliquer six lignes coûte moins cher qu'une hiérarchie pour deux types qui n'ont aucune raison de partager du code demain. Plus <code>ScreeningTime</code> et <code>BookingStatus</code>, construits en Partie 4.</p>
+        </section>
+
+        <section style="font-size: 0.75em;">
+            <h2>Étape 2 : normaliser à la frontière</h2>
+<pre><code class="php" data-trim>
+final readonly class ShowtimeList {
+    /** @param list&lt;Showtime&gt; $items */
+    private function __construct(private array $items) {}
+
+    public static function fromApiResponse(array|object $raw): self {
+        // `[]` (rien de programmé) et `{date: [...]}` convergent ici :
+        // (array) [] reste [], le foreach ne fait juste rien.
+        $items = [];
+        foreach ((array) $raw as $times) {
+            foreach ($times as $t) {
+                $items[] = Showtime::fromApi($t);
+            }
+        }
+        return new self($items);
+    }
+
+    public function nextBookable(): ?Showtime {
+        foreach ($this->items as $t) {
+            if ($t->isBookable()) return $t;
+        }
+        return null;
+    }
+}
+</code></pre>
+        </section>
+
+        <section>
+            <h2>Étape 3 : le domaine ne ment plus</h2>
+<pre><code class="php" data-trim>
+final readonly class Showtime {
     public function __construct(
-        public readonly UserId $id,
-        public readonly Email $email,
-        public HashedPassword $password,
-        public readonly DateTimeImmutable $createdAt,
+        public ScreeningTime $time,
+        public BookingStatus $status,
     ) {}
 
-    public static function register(
-        Email $email,
-        PlainPassword $password,
-        Hasher $hasher,
-    ): self {
+    public static function fromApi(array $raw): self {
         return new self(
-            UserId::generate(),
-            $email,
-            $hasher->hash($password),
-            new DateTimeImmutable(),
+            new ScreeningTime($raw['time']),
+            BookingStatus::from($raw['status']),
         );
     }
+
+    public function isBookable(): bool {
+        return $this->status->isBookable();
+    }
 }
 </code></pre>
         </section>
 
-        <section>
-            <h2>Étape 4 : Service final</h2>
+        <section style="font-size: 0.85em;">
+            <h2>Étape 4 : le service final</h2>
 <pre><code class="php" data-trim>
-final readonly class RegisterUserHandler {
-    public function __construct(
-        private UserRepository $users,
-        private Hasher $hasher,
-    ) {}
+final readonly class NextScreeningFinder {
+    public function __construct(private PatheApiClient $client) {}
 
-    public function __invoke(RegisterUserCommand $command): UserId {
-        if ($this->users->existsByEmail($command->email)) {
-            throw new EmailAlreadyRegisteredException($command->email);
+    public function find(ShowSlug $show, CinemaSlug $cinema): Showtime {
+        try {
+            $raw = $this->client->getRawShowtimes($show, $cinema);
+        } catch (BotBlockedException $e) {
+            throw new ShowtimeFetchFailedException($show, $cinema, previous: $e);
         }
 
-        $user = User::register($command->email, $command->password, $this->hasher);
-        $this->users->save($user);
-
-        return $user->id;
+        return ShowtimeList::fromApiResponse($raw)->nextBookable()
+            ?? throw new NoScreeningAvailableException($show, $cinema);
     }
 }
 </code></pre>
@@ -1961,17 +1165,16 @@ final readonly class RegisterUserHandler {
             <table class="cost-table">
                 <thead><tr><th>Critère</th><th>Avant</th><th>Après</th></tr></thead>
                 <tbody>
-                <tr><td>Lignes</td><td>~20</td><td>~10 (par fichier)</td></tr>
-                <tr><td>États invalides possibles</td><td>∞</td><td>0</td></tr>
-                <tr><td>Tests à écrire pour valider l'email</td><td>10+</td><td>0 (validé en VO)</td></tr>
-                <tr><td>Retour ambigu</td><td>3 types</td><td>1 type + exceptions</td></tr>
-                <tr><td>Mockabilité</td><td>Faible</td><td>Excellente</td></tr>
+                <tr><td>Retour ambigu</td><td>3 formes possibles</td><td>1 type + exceptions</td></tr>
+                <tr><td>Slugs inversables</td><td>Oui</td><td>Non — TypeError</td></tr>
+                <tr><td>Format de date/capacité</td><td>Reparsé partout</td><td>Validé une fois</td></tr>
+                <tr><td>Tests pour la forme API</td><td>10+</td><td>0 (VOs)</td></tr>
                 </tbody>
             </table>
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 12 — CONCLUSION                                      -->
+        <!-- SECTION 11 — CONCLUSION                                      -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #f5f7fa, #e2e8f0)">
@@ -1980,16 +1183,16 @@ final readonly class RegisterUserHandler {
         </section>
 
         <section style="font-size: 0.8em;">
-            <h2>Les 8 commandements du PHP défensif</h2>
+            <h2>Les commandements du PHP défensif</h2>
             <ol>
+                <li class="fragment">Poka-yoke ton domaine : rends l'erreur <strong>impossible</strong> avant de la détecter</li>
                 <li class="fragment"><code>declare(strict_types=1)</code> tu écriras</li>
                 <li class="fragment">Tout, tu typeras (paramètres, retours, propriétés)</li>
                 <li class="fragment"><code>readonly</code> par défaut, mutable par exception</li>
                 <li class="fragment">Value Objects pour le domaine, primitifs pour l'infra</li>
                 <li class="fragment">Exceptions du domaine, jamais <code>\Exception</code> nu</li>
-                <li class="fragment"><code>#[NoDiscard]</code> sur les retours qui doivent l'être</li>
-                <li class="fragment">PHPStan niveau 10 ou rien</li>
-                <li class="fragment"><code>final</code> par défaut, abstrait par intention</li>
+                <li class="fragment">Normalise les API tierces <strong>une fois</strong>, à la frontière</li>
+                <li class="fragment">L'analyse statique tourne à chaque commit, au niveau le plus strict que le code supporte</li>
             </ol>
         </section>
 
@@ -1999,8 +1202,8 @@ final readonly class RegisterUserHandler {
                 <li class="fragment">📘 <em>Extremely Defensive PHP</em> — Marco Pivetta (ocramius)</li>
                 <li class="fragment">📕 <em>Implementing Domain-Driven Design</em> — Vaughn Vernon</li>
                 <li class="fragment">📗 <em>Object Design Style Guide</em> — Matthias Noback</li>
+                <li class="fragment">🏭 <em>Zero Quality Control: Source Inspection and the Poka-Yoke System</em> — Shigeo Shingo</li>
                 <li class="fragment">🌐 <a href="https://phpstan.org">phpstan.org</a> — documentation officielle</li>
-                <li class="fragment">🌐 <a href="https://psalm.dev">psalm.dev</a></li>
             </ul>
         </section>
 
