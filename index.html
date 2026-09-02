@@ -56,7 +56,6 @@
                 <li class="fragment">Nullabilité maîtrisée</li>
                 <li class="fragment">Encapsulation</li>
                 <li class="fragment">Exceptions et résultats</li>
-                <li class="fragment">Un vrai refactoring, de bout en bout — avec l'API Pathé</li>
                 <li class="fragment">Développement agentique : une détection de plus, jamais une prévention</li>
             </ol>
         </section>
@@ -409,6 +408,35 @@ function getShowtimes(
             <p class="fragment">L'incohérence de l'API s'arrête <strong>à la frontière</strong> du système.</p>
         </section>
 
+        <section style="font-size: 0.75em;">
+            <h2>Ce que <code>ShowtimeList</code> fait vraiment</h2>
+<pre><code class="php" data-trim>
+final readonly class ShowtimeList {
+    /** @param list&lt;Showtime&gt; $items */
+    private function __construct(private array $items) {}
+
+    public static function fromApiResponse(array|object $raw): self {
+        // `[]` (rien de programmé) et `{date: [...]}` convergent ici :
+        // (array) [] reste [], le foreach ne fait juste rien.
+        $items = [];
+        foreach ((array) $raw as $times) {
+            foreach ($times as $t) {
+                $items[] = Showtime::fromApi($t);
+            }
+        }
+        return new self($items);
+    }
+
+    public function nextBookable(): ?Showtime {
+        foreach ($this->items as $t) {
+            if ($t->isBookable()) return $t;
+        }
+        return null;
+    }
+}
+</code></pre>
+        </section>
+
         <section>
             <h2>Récap</h2>
             <ul>
@@ -591,6 +619,28 @@ getShowtimes($cinemaSlug, $showSlug);
             <p class="fragment">Le compilateur refuse l'inversion. Plus de test à écrire pour ça.</p>
         </section>
 
+        <section style="font-size: 0.85em;">
+            <h2>Les classes derrière <code>ShowSlug</code> et <code>CinemaSlug</code></h2>
+<pre><code class="php" data-trim>
+final readonly class ShowSlug {
+    public function __construct(public string $value) {
+        if (trim($value) === '') {
+            throw new InvalidArgumentException('Slug de film vide');
+        }
+    }
+}
+
+final readonly class CinemaSlug {
+    public function __construct(public string $value) {
+        if (trim($value) === '') {
+            throw new InvalidArgumentException('Slug de cinéma vide');
+        }
+    }
+}
+</code></pre>
+            <p class="fragment small-text">Deux classes quasi identiques, volontairement : dupliquer six lignes coûte moins cher qu'une hiérarchie pour deux types qui n'ont aucune raison de partager du code demain.</p>
+        </section>
+
         <section style="font-size: 0.6em;">
             <h2>Exemple concret : <code>Coordinates</code></h2>
             <p class="small-text">L'API renvoie <code>{ "x": 47.322, "y": 5.041 }</code> — <code>x</code> est la latitude, <code>y</code> la longitude. Vraiment.</p>
@@ -666,6 +716,30 @@ BookingStatus::from('available');  // ✅
 BookingStatus::from('complet');    // ValueError explicite
 </code></pre>
             <p class="fragment">Une valeur non prévue ne se glisse plus silencieusement dans le système.</p>
+        </section>
+
+        <section>
+            <h2>Le domaine ne ment plus</h2>
+<pre><code class="php" data-trim>
+final readonly class Showtime {
+    public function __construct(
+        public ScreeningTime $time,
+        public BookingStatus $status,
+    ) {}
+
+    public static function fromApi(array $raw): self {
+        return new self(
+            new ScreeningTime($raw['time']),
+            BookingStatus::from($raw['status']),
+        );
+    }
+
+    public function isBookable(): bool {
+        return $this->status->isBookable();
+    }
+}
+</code></pre>
+            <p class="fragment small-text"><code>ScreeningTime</code> et <code>BookingStatus</code> assemblés en un seul objet — aucun champ brut de l'API ne survit jusqu'ici.</p>
         </section>
 
         <section style="font-size: 0.65em;">
@@ -1058,149 +1132,8 @@ try {
             <p class="fragment">Catchez ce que vous savez <strong>traiter</strong>. L'exception originale est préservée, le contexte métier est ajouté.</p>
         </section>
 
-        <section>
-            <h2>Récap</h2>
-            <ul>
-                <li class="fragment">✅ Exceptions du domaine pour le métier</li>
-                <li class="fragment">✅ Hiérarchie pour catcher au bon niveau</li>
-                <li class="fragment">✅ Re-throw avec contexte</li>
-                <li class="fragment">❌ <code>catch (\Throwable $e)</code> n'importe où</li>
-                <li class="fragment">❌ Exception pour le flow normal</li>
-            </ul>
-        </section>
-
-        <!-- ============================================================ -->
-        <!-- SECTION 10 — MISE EN PRATIQUE                                -->
-        <!-- ============================================================ -->
-
-        <section data-background-gradient="linear-gradient(to bottom right, #bbf7d0, #f0fdf4)">
-            <h2 class="section-title">Partie 9</h2>
-            <h1 class="section-main">Mise en pratique</h1>
-            <p class="section-meta">Un refactoring complet, avec la vraie API Pathé</p>
-        </section>
-
         <section style="font-size: 0.85em;">
-            <h2>Le besoin</h2>
-            <p>Trouver la <strong>prochaine séance réservable</strong> d'un film, dans un cinéma donné.</p>
-            <p class="fragment small-text">Trois bizarreries de l'API à absorber :</p>
-            <ul>
-                <li class="fragment small-text"><code>"time": "2026-08-16 20:10:00"</code> — pas de l'ISO 8601</li>
-                <li class="fragment small-text"><code>"auditoriumCapacity": "348"</code> — un nombre, en string</li>
-                <li class="fragment small-text">réponse en <code>{}</code> ou en <code>[]</code> selon les cas</li>
-            </ul>
-        </section>
-
-        <section style="font-size: 0.85em;">
-            <h2>Le code de départ</h2>
-<pre><code class="php" data-trim>
-class ShowtimeFinder {
-    public function find($showSlug, $cinemaSlug) {
-        $r = $this->http->get("/show/$showSlug/showtimes/$cinemaSlug");
-        if (empty($r)) return false;
-
-        foreach ($r as $date => $times) {
-            foreach ($times as $t) {
-                if ($t['status'] == 'available') {
-                    return $t; // array brut de l'API
-                }
-            }
-        }
-        return null;
-    }
-}
-</code></pre>
-            <p class="fragment">Combien de problèmes ?</p>
-        </section>
-
-        <section style="font-size: 0.7em;">
-            <h2>Les problèmes</h2>
-            <ol>
-                <li class="fragment"><code>$showSlug</code>/<code>$cinemaSlug</code> non typés → inversion possible <span class="small-text">(Partie 5)</span></li>
-                <li class="fragment">Retour ambigu : <code>false</code> | <code>null</code> | <code>array</code> <span class="small-text">(Partie 3)</span></li>
-                <li class="fragment">Forme de réponse API non normalisée <span class="small-text">(Partie 3)</span></li>
-                <li class="fragment"><code>time</code> et <code>status</code> restent des <code>string</code> brutes <span class="small-text">(Partie 5)</span></li>
-                <li class="fragment">Comparaison <code>==</code> au lieu de <code>===</code></li>
-                <li class="fragment">Aucune exception : l'appelant doit deviner <span class="small-text">(Partie 6/8)</span></li>
-                <li class="fragment">Le champ métier « réservable » n'existe pas, il faut le redéduire partout <span class="small-text">(Partie 7)</span></li>
-            </ol>
-        </section>
-
-        <section style="font-size: 0.8em;">
-            <h2>Étape 1 : les Value Objects</h2>
-<pre><code class="php" data-trim>
-final readonly class ShowSlug {
-    public function __construct(public string $value) {
-        if (trim($value) === '') {
-            throw new InvalidArgumentException('Slug de film vide');
-        }
-    }
-}
-
-final readonly class CinemaSlug {
-    public function __construct(public string $value) {
-        if (trim($value) === '') {
-            throw new InvalidArgumentException('Slug de cinéma vide');
-        }
-    }
-}
-</code></pre>
-            <p class="fragment small-text">Deux classes quasi identiques, volontairement : dupliquer six lignes coûte moins cher qu'une hiérarchie pour deux types qui n'ont aucune raison de partager du code demain. Plus <code>ScreeningTime</code> et <code>BookingStatus</code>, construits en Partie 5.</p>
-        </section>
-
-        <section style="font-size: 0.75em;">
-            <h2>Étape 2 : normaliser à la frontière</h2>
-<pre><code class="php" data-trim>
-final readonly class ShowtimeList {
-    /** @param list&lt;Showtime&gt; $items */
-    private function __construct(private array $items) {}
-
-    public static function fromApiResponse(array|object $raw): self {
-        // `[]` (rien de programmé) et `{date: [...]}` convergent ici :
-        // (array) [] reste [], le foreach ne fait juste rien.
-        $items = [];
-        foreach ((array) $raw as $times) {
-            foreach ($times as $t) {
-                $items[] = Showtime::fromApi($t);
-            }
-        }
-        return new self($items);
-    }
-
-    public function nextBookable(): ?Showtime {
-        foreach ($this->items as $t) {
-            if ($t->isBookable()) return $t;
-        }
-        return null;
-    }
-}
-</code></pre>
-        </section>
-
-        <section>
-            <h2>Étape 3 : le domaine ne ment plus</h2>
-<pre><code class="php" data-trim>
-final readonly class Showtime {
-    public function __construct(
-        public ScreeningTime $time,
-        public BookingStatus $status,
-    ) {}
-
-    public static function fromApi(array $raw): self {
-        return new self(
-            new ScreeningTime($raw['time']),
-            BookingStatus::from($raw['status']),
-        );
-    }
-
-    public function isBookable(): bool {
-        return $this->status->isBookable();
-    }
-}
-</code></pre>
-        </section>
-
-        <section style="font-size: 0.85em;">
-            <h2>Étape 4 : le service final</h2>
+            <h2>Le service complet</h2>
 <pre><code class="php" data-trim>
 final readonly class NextScreeningFinder {
     public function __construct(private PatheApiClient $client) {}
@@ -1217,27 +1150,26 @@ final readonly class NextScreeningFinder {
     }
 }
 </code></pre>
+            <p class="fragment small-text">Le catch ciblé du slide précédent, plus un second échec possible — aucun état invalide ne peut plus sortir de cette méthode.</p>
         </section>
 
         <section>
-            <h2>Comparaison</h2>
-            <table class="cost-table">
-                <thead><tr><th>Critère</th><th>Avant</th><th>Après</th></tr></thead>
-                <tbody>
-                <tr><td>Retour ambigu</td><td>3 formes possibles</td><td>1 type + exceptions</td></tr>
-                <tr><td>Slugs inversables</td><td>Oui</td><td>Non — TypeError</td></tr>
-                <tr><td>Format de date/capacité</td><td>Reparsé partout</td><td>Validé une fois</td></tr>
-                <tr><td>Tests pour la forme API</td><td>10+</td><td>0 (VOs)</td></tr>
-                </tbody>
-            </table>
+            <h2>Récap</h2>
+            <ul>
+                <li class="fragment">✅ Exceptions du domaine pour le métier</li>
+                <li class="fragment">✅ Hiérarchie pour catcher au bon niveau</li>
+                <li class="fragment">✅ Re-throw avec contexte</li>
+                <li class="fragment">❌ <code>catch (\Throwable $e)</code> n'importe où</li>
+                <li class="fragment">❌ Exception pour le flow normal</li>
+            </ul>
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 11 — DÉVELOPPEMENT AGENTIQUE                         -->
+        <!-- SECTION 10 — DÉVELOPPEMENT AGENTIQUE                         -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #cbd5e1, #f8fafc)">
-            <h2 class="section-title">Partie 10</h2>
+            <h2 class="section-title">Partie 9</h2>
             <h1 class="section-main">Développement agentique</h1>
             <p class="section-meta">Une détection de plus, jamais une prévention</p>
         </section>
