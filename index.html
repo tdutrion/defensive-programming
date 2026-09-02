@@ -67,7 +67,7 @@
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #fef3c7, #fffbeb)">
-            <h2 class="section-title">Partie 0</h2>
+            <h2 class="section-title">Partie 1</h2>
             <h1 class="section-main">Philosophie</h1>
             <p class="section-meta">Pourquoi se donner tout ce mal ?</p>
         </section>
@@ -165,7 +165,7 @@
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #dbeafe, #eff6ff)">
-            <h2 class="section-title">Partie 1</h2>
+            <h2 class="section-title">Partie 2</h2>
             <h1 class="section-main">La programmation défensive</h1>
             <p class="section-meta">…ou : comment dire « non » poliment à ses callers</p>
         </section>
@@ -229,7 +229,7 @@ function divide(
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #cffafe, #ecfeff)">
-            <h2 class="section-title">Partie 2</h2>
+            <h2 class="section-title">Partie 3</h2>
             <h1 class="section-main">Le système de types</h1>
             <p class="section-meta">Votre meilleur allié, gratuit, livré avec le langage</p>
         </section>
@@ -420,7 +420,7 @@ function getShowtimes(
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #c7d2fe, #e0e7ff)">
-            <h2 class="section-title">Partie 3</h2>
+            <h2 class="section-title">Partie 4</h2>
             <h1 class="section-main">Immutabilité</h1>
             <p class="section-meta">L'art de ne <em>jamais</em> changer d'avis</p>
         </section>
@@ -535,7 +535,7 @@ $p->refresh(42); // OK
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #dcfce7, #f0fdf4)">
-            <h2 class="section-title">Partie 4</h2>
+            <h2 class="section-title">Partie 5</h2>
             <h1 class="section-main">Value Objects</h1>
             <p class="section-meta">Le couteau suisse du domaine</p>
         </section>
@@ -577,7 +577,7 @@ function getShowtimes(
 ): ShowtimeList { /* … */ }
 
 getShowtimes($cinemaSlug, $showSlug);
-// TypeError: attendait ShowSlug, CinemaSlug donné
+// TypeError immédiat
 </code></pre>
                 </div>
             </div>
@@ -694,7 +694,7 @@ BookingStatus::from('complet');    // ValueError explicite
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #fce7f3, #fdf2f8)">
-            <h2 class="section-title">Partie 5</h2>
+            <h2 class="section-title">Partie 6</h2>
             <h1 class="section-main">Nullabilité maîtrisée</h1>
             <p class="section-meta">« The billion dollar mistake » — Tony Hoare, 2009</p>
         </section>
@@ -787,7 +787,7 @@ public function getShow(
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #e9d5ff, #faf5ff)">
-            <h2 class="section-title">Partie 6</h2>
+            <h2 class="section-title">Partie 7</h2>
             <h1 class="section-main">Encapsulation</h1>
             <p class="section-meta">Tell, don't ask</p>
         </section>
@@ -901,7 +901,7 @@ if ($showtime->isBookable()) {
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #fed7aa, #fff7ed)">
-            <h2 class="section-title">Partie 7</h2>
+            <h2 class="section-title">Partie 8</h2>
             <h1 class="section-main">Exceptions et résultats</h1>
             <p class="section-meta">Échouer avec élégance et précision</p>
         </section>
@@ -1015,7 +1015,7 @@ try {
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #bbf7d0, #f0fdf4)">
-            <h2 class="section-title">Partie 8</h2>
+            <h2 class="section-title">Partie 9</h2>
             <h1 class="section-main">Mise en pratique</h1>
             <p class="section-meta">Un refactoring complet, avec la vraie API Pathé</p>
         </section>
@@ -1056,13 +1056,13 @@ class ShowtimeFinder {
         <section style="font-size: 0.7em;">
             <h2>Les problèmes</h2>
             <ol>
-                <li class="fragment"><code>$showSlug</code>/<code>$cinemaSlug</code> non typés → inversion possible <span class="small-text">(Partie 4)</span></li>
-                <li class="fragment">Retour ambigu : <code>false</code> | <code>null</code> | <code>array</code> <span class="small-text">(Partie 2)</span></li>
-                <li class="fragment">Forme de réponse API non normalisée <span class="small-text">(Partie 2)</span></li>
-                <li class="fragment"><code>time</code> et <code>status</code> restent des <code>string</code> brutes <span class="small-text">(Partie 4)</span></li>
+                <li class="fragment"><code>$showSlug</code>/<code>$cinemaSlug</code> non typés → inversion possible <span class="small-text">(Partie 5)</span></li>
+                <li class="fragment">Retour ambigu : <code>false</code> | <code>null</code> | <code>array</code> <span class="small-text">(Partie 3)</span></li>
+                <li class="fragment">Forme de réponse API non normalisée <span class="small-text">(Partie 3)</span></li>
+                <li class="fragment"><code>time</code> et <code>status</code> restent des <code>string</code> brutes <span class="small-text">(Partie 5)</span></li>
                 <li class="fragment">Comparaison <code>==</code> au lieu de <code>===</code></li>
-                <li class="fragment">Aucune exception : l'appelant doit deviner <span class="small-text">(Partie 5/7)</span></li>
-                <li class="fragment">Le champ métier « réservable » n'existe pas, il faut le redéduire partout <span class="small-text">(Partie 6)</span></li>
+                <li class="fragment">Aucune exception : l'appelant doit deviner <span class="small-text">(Partie 6/8)</span></li>
+                <li class="fragment">Le champ métier « réservable » n'existe pas, il faut le redéduire partout <span class="small-text">(Partie 7)</span></li>
             </ol>
         </section>
 
@@ -1085,7 +1085,7 @@ final readonly class CinemaSlug {
     }
 }
 </code></pre>
-            <p class="fragment small-text">Deux classes quasi identiques, volontairement : dupliquer six lignes coûte moins cher qu'une hiérarchie pour deux types qui n'ont aucune raison de partager du code demain. Plus <code>ScreeningTime</code> et <code>BookingStatus</code>, construits en Partie 4.</p>
+            <p class="fragment small-text">Deux classes quasi identiques, volontairement : dupliquer six lignes coûte moins cher qu'une hiérarchie pour deux types qui n'ont aucune raison de partager du code demain. Plus <code>ScreeningTime</code> et <code>BookingStatus</code>, construits en Partie 5.</p>
         </section>
 
         <section style="font-size: 0.75em;">
