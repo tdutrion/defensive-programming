@@ -1160,6 +1160,60 @@ final readonly class NextScreeningFinder {
 </code></pre>
         </section>
 
+        <section style="font-size: 0.8em;">
+            <h2>Étape 5 : le contrôleur</h2>
+<pre><code class="php" data-trim>
+final class NextScreeningController extends AbstractController {
+    public function __construct(private NextScreeningFinder $finder) {}
+
+    #[Route('/films/{show}/cinemas/{cinema}/prochaine-seance')]
+    public function __invoke(string $show, string $cinema): Response {
+        try {
+            $showtime = $this->finder->find(
+                new ShowSlug($show),
+                new CinemaSlug($cinema),
+            );
+        } catch (NoScreeningAvailableException) {
+            return $this->render('showtime/aucune.html.twig');
+        }
+
+        return $this->render('showtime/prochaine.html.twig', [
+            'showtime' => $showtime,
+        ]);
+    }
+}
+</code></pre>
+            <p class="fragment small-text">Un slug vide ? <code>ShowSlug</code> lève avant même d'atteindre le finder — le contrôleur n'a aucun <code>if</code> à écrire pour ça.</p>
+        </section>
+
+        <section style="font-size: 0.75em;">
+            <h2>Étape 6 : le template Twig — l'autre <code>null</code></h2>
+            <p class="small-text">Twig a le même défaut que PHP avant <code>strict_types</code> : par défaut, une variable ou un attribut inconnu ne plante pas.</p>
+            <div class="two-col">
+                <div>
+                    <h3 class="bad">❌ Silence</h3>
+<pre><code class="twig" data-trim>
+{# faute de frappe sur "time" #}
+&lt;p&gt;{{ showtime.tim }}&lt;/p&gt;
+{# rendu : &lt;p&gt;&lt;/p&gt; — aucune erreur #}
+</code></pre>
+                </div>
+                <div>
+                    <h3 class="good">✅ Fail fast</h3>
+<pre><code class="yaml" data-trim>
+# config/packages/twig.yaml
+twig:
+    strict_variables: true
+</code></pre>
+<pre><code class="twig" data-trim>
+&lt;p&gt;{{ showtime.time.value|date('d/m/Y H:i') }}&lt;/p&gt;
+</code></pre>
+                </div>
+            </div>
+            <p class="fragment"><code>strict_variables</code> transforme l'accès inconnu en <code>RuntimeError</code> immédiat — le poka-yoke de Twig, symétrique de PHPStan côté PHP.</p>
+            <p class="fragment small-text"><code>strict_variables</code> est un réglage <strong>global</strong> à toute l'application — l'activer suppose que <em>tous</em> les templates ne reçoivent que des données garanties, jamais des tableaux bruts où une clé peut légitimement manquer.</p>
+        </section>
+
         <section>
             <h2>Comparaison</h2>
             <table class="cost-table">
@@ -1168,6 +1222,7 @@ final readonly class NextScreeningFinder {
                 <tr><td>Retour ambigu</td><td>3 formes possibles</td><td>1 type + exceptions</td></tr>
                 <tr><td>Slugs inversables</td><td>Oui</td><td>Non — TypeError</td></tr>
                 <tr><td>Format de date/capacité</td><td>Reparsé partout</td><td>Validé une fois</td></tr>
+                <tr><td>Typo dans le template</td><td>Silencieuse (<code>null</code>)</td><td><code>RuntimeError</code> immédiat</td></tr>
                 <tr><td>Tests pour la forme API</td><td>10+</td><td>0 (VOs)</td></tr>
                 </tbody>
             </table>
