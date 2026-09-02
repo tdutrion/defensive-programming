@@ -51,6 +51,7 @@
                 <li class="fragment">Encapsulation</li>
                 <li class="fragment">Exceptions et résultats</li>
                 <li class="fragment">Un vrai refactoring, de bout en bout — avec l'API Pathé</li>
+                <li class="fragment">Développement agentique : une détection de plus, jamais une prévention</li>
             </ol>
         </section>
 
@@ -1226,7 +1227,116 @@ final readonly class NextScreeningFinder {
         </section>
 
         <!-- ============================================================ -->
-        <!-- SECTION 11 — CONCLUSION                                      -->
+        <!-- SECTION 11 — DÉVELOPPEMENT AGENTIQUE                         -->
+        <!-- ============================================================ -->
+
+        <section data-background-gradient="linear-gradient(to bottom right, #cbd5e1, #f8fafc)">
+            <h2 class="section-title">Partie 10</h2>
+            <h1 class="section-main">Développement agentique</h1>
+            <p class="section-meta">Une détection de plus, jamais une prévention</p>
+        </section>
+
+        <section>
+            <h2>Où ça se range, dans la hiérarchie</h2>
+            <p>Un agent qui relit votre code avant un commit, c'est un <strong>poka-yoke de détection</strong> — exactement comme une exception fail-fast.</p>
+            <ul>
+                <li class="fragment">Il tourne <em>après</em> que le code a été écrit, jamais avant</li>
+                <li class="fragment">Il peut se tromper, rater un cas, halluciner une justification</li>
+                <li class="fragment">Il ne remplace jamais un <code>TypeError</code></li>
+            </ul>
+            <p class="fragment quote-attrib">Rappel de la Partie 1 : la hiérarchie n'est pas neutre. Préférez toujours la prévention.</p>
+        </section>
+
+        <section style="font-size: 0.8em;">
+            <h2>Un skill ciblé, pas un « relis mon code »</h2>
+            <p class="small-text">Un agent générique dit « ça a l'air bien ». Un skill avec une instruction précise cherche des <strong>patterns</strong> :</p>
+<pre><code class="yaml" data-trim>
+---
+name: typing-guard
+description: Repère les paramètres et constantes qui devraient être des types dédiés
+---
+Avant de proposer un diff, vérifie :
+- Deux paramètres adjacents de même type primitif représentant
+  des concepts différents → proposer un Value Object par paramètre.
+- Un ensemble fermé de constantes, ou une string comparée à une
+  liste fixe (in_array, ===) → proposer un enum.
+Justifie chaque suggestion par un scénario d'erreur concret.
+</code></pre>
+        </section>
+
+        <section style="font-size: 0.8em;">
+            <h2>Exemple : le piège déjà vu en Partie 5</h2>
+<pre><code class="php" data-trim>
+function getShowtimes(string $show, string $cinema): array { /* … */ }
+</code></pre>
+            <blockquote class="quote-block fragment">
+                ⚠️ <code>$show</code> et <code>$cinema</code> sont deux <code>string</code> adjacents représentant des concepts différents (film vs cinéma). Un appel <code>getShowtimes($cinemaSlug, $showSlug)</code> compile. Plante en prod.<br>
+                → Proposition : <code>ShowSlug</code>, <code>CinemaSlug</code>.
+            </blockquote>
+            <p class="fragment">Exactement le correctif qu'on a écrit à la main en Partie 5 — sauf que là, personne n'a eu besoin d'y penser.</p>
+        </section>
+
+        <section style="font-size: 0.65em;">
+            <h2>D'autres patterns détectables</h2>
+            <div class="two-col">
+                <div>
+                    <h3 class="bad">❌ Avant</h3>
+<pre><code class="php" data-trim>
+class OrderStatus {
+    public const PENDING  = 'pending';
+    public const APPROVED = 'approved';
+}
+
+if ($status === OrderStatus::APPROVED) { /* … */ }
+</code></pre>
+<pre><code class="php" data-trim>
+if (in_array($status, ['pending', 'approved'], true)) {
+    /* … */
+}
+</code></pre>
+                </div>
+                <div>
+                    <h3 class="good">✅ Après</h3>
+<pre><code class="php" data-trim>
+enum BookingStatus: string {
+    case Pending  = 'pending';
+    case Approved = 'approved';
+}
+
+if ($status === BookingStatus::Approved) { /* … */ }
+</code></pre>
+<pre><code class="php" data-trim>
+if (BookingStatus::tryFrom($status) !== null) {
+    /* … */
+}
+</code></pre>
+                </div>
+            </div>
+            <p class="fragment">Même diagnostic dans les deux cas : un <strong>ensemble fermé de valeurs</strong> qui ne dit pas son nom. <code>BookingStatus</code> a déjà été construit en Partie 5.</p>
+        </section>
+
+        <section>
+            <h2>Les limites</h2>
+            <ul>
+                <li class="fragment">Non déterministe : deux relectures peuvent donner deux avis différents</li>
+                <li class="fragment">Faux négatifs possibles sur un pattern qu'il n'a jamais vu</li>
+                <li class="fragment">Faux positifs : parfois deux <code>string</code> adjacentes sont juste... deux <code>string</code></li>
+                <li class="fragment">Ne remplace ni le compilateur, ni PHPStan, ni la revue humaine</li>
+            </ul>
+            <p class="fragment quote-attrib">Un filet de plus dans la chronologie du coût des bugs — pas un raccourci pour sauter les types.</p>
+        </section>
+
+        <section>
+            <h2>Récap</h2>
+            <ul>
+                <li class="fragment">✅ Un skill ciblé plutôt qu'une relecture vague</li>
+                <li class="fragment">✅ Utile en détection : primitive obsession, constantes fermées, ensembles dupliqués</li>
+                <li class="fragment">❌ Jamais un substitut aux types, à PHPStan ou à la revue humaine</li>
+            </ul>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 12 — CONCLUSION                                      -->
         <!-- ============================================================ -->
 
         <section data-background-gradient="linear-gradient(to bottom right, #f5f7fa, #e2e8f0)">
