@@ -164,7 +164,7 @@ function divide(
             <p class="fragment small-text">Sources : tkt.</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.8em;">
             <h2>Fail fast, fail loud</h2>
             <div class="two-col">
                 <div>
@@ -306,7 +306,7 @@ function process(
     // Ici, $items est garanti Countable ET Iterator
 }
 </code></pre>
-            <p class="fragment">À lire littéralement : « (Countable ET Iterator) OU null ».</p>
+            <p class="fragment" style="font-size: 0.9em;">À lire littéralement : « (Countable ET Iterator) OU null ».</p>
         </section>
 
         <section>
@@ -516,7 +516,7 @@ array_map('double', ['1', '2', '3']);
             <p class="section-meta">L'art de ne <em>jamais</em> changer d'avis</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.7em;">
             <h2>Pourquoi l'immutabilité ?</h2>
             <ul>
                 <li class="fragment">🧠 <strong>Moins de charge cognitive</strong> : si je ne peux pas modifier, je n'ai pas à y penser</li>
@@ -843,7 +843,37 @@ new PositiveInteger(-3);          // ❌ InvalidArgumentException
 // La signature porte la garantie — plus de check dans la fonction
 function reserveStock(PositiveInteger $qty): void { /* … */ }
 </code></pre>
-            <p class="fragment"><code>PositiveInteger</code>, <code>NonEmptyString</code>, <code>Percentage</code>, <code>Latitude</code>, <code>NonEmptyList</code>… autant de classes que de <strong>contraintes métier que vous craignez d'oublier</strong>.</p>
+        </section>
+
+        <section style="font-size: 0.8em;">
+            <h2>Une famille entière de Value Objects</h2>
+            <p>Autant de classes que de <strong>contraintes métier que vous craignez d'oublier</strong> :</p>
+<pre><code class="php" data-trim>
+final readonly class NonEmptyString {
+    public function __construct(public string $value) {
+        if (trim($value) === '') {
+            throw new InvalidArgumentException('Chaîne vide interdite');
+        }
+    }
+}
+
+final readonly class Percentage {
+    public function __construct(public float $value) {
+        if ($value < 0 || $value > 100) {
+            throw new OutOfRangeException("0–100, reçu : {$value}");
+        }
+    }
+}
+
+final readonly class Latitude {
+    public function __construct(public float $value) {
+        if ($value < -90 || $value > 90) {
+            throw new OutOfRangeException("-90 à 90, reçu : {$value}");
+        }
+    }
+}
+</code></pre>
+            <p class="fragment">Et encore : <code>NonEmptyList</code>, <code>SortedArray</code>, <code>FutureDate</code>, <code>UrlSafeString</code>, <code>EvenInteger</code>…</p>
             <p class="fragment">La règle vit <strong>dans le type</strong>, pas dans une checklist mentale ou des <code>assert</code> éparpillés.</p>
         </section>
 
@@ -1063,7 +1093,7 @@ function totalOf(?Cart $cart): int {
             </div>
         </section>
 
-        <section>
+        <section style="font-size: 0.9em;">
             <h2>Null Object pattern</h2>
 <pre><code class="php" data-trim>
 interface Logger {
@@ -1170,7 +1200,7 @@ final class UserService {
             </ul>
         </section>
 
-        <section>
+        <section style="font-size: 0.9em;">
             <h2>« Mais on ne peut plus mocker ! »</h2>
             <p class="fragment">Mockez les <strong>interfaces</strong>, pas les classes.</p>
 <pre class="fragment"><code class="php" data-trim>
@@ -1802,9 +1832,9 @@ class UserService extends AbstractBaseEntityServiceFactoryManager {
             <p class="section-meta">Refactoring intégral d'un cas réel</p>
         </section>
 
-        <section>
+        <section style="font-size: 0.9em;">
             <h2>Le code de départ</h2>
-<pre style="font-size: 0.55em;"><code class="php" data-trim>
+<pre style="font-size: 0.611em;"><code class="php" data-trim>
 class UserService {
     public function register($data) {
         if (empty($data['email'])) return false;
