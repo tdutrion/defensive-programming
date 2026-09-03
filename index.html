@@ -268,6 +268,26 @@ add("5", "10");
             <p class="fragment">En haut de <strong>chaque fichier</strong>. Sans exception.</p>
         </section>
 
+        <section style="font-size: 0.75em;">
+            <h2>⚠️ Pas infaillible : les callbacks <em>core</em></h2>
+<pre><code class="php" data-trim>
+declare(strict_types=1);
+
+function double(int $x): int {
+    return $x * 2;
+}
+
+double("5");
+// TypeError: Argument #1 ($x)
+// must be of type int, string given
+
+array_map('double', ['1', '2', '3']);
+// Aucune erreur. Résultat : [2, 4, 6]
+</code></pre>
+            <p class="fragment"><code>array_map</code> (moteur C) ré-appelle <code>double</code> hors du scope du fichier — <code>strict_types</code> ne s'applique qu'aux appels <strong>écrits dans le fichier</strong>.</p>
+            <p class="fragment small-text">Même chose pour <code>array_filter</code>, <code>usort</code>, <code>preg_replace_callback</code>, <code>call_user_func</code>…</p>
+        </section>
+
         <section>
             <h2>Typer les retours, toujours</h2>
             <div class="two-col">
