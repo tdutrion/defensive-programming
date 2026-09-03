@@ -273,19 +273,17 @@ add("5", "10");
 <pre><code class="php" data-trim>
 declare(strict_types=1);
 
-function double(int $x): int {
-    return $x * 2;
-}
+// intdiv(int $num1, int $num2): int — fonction native de PHP
 
-array_map('double', ['1', '2', '3']);
-// Aucune erreur. Résultat : [2, 4, 6]
+array_map('intdiv', ['10', '20'], ['3', '4']);
+// Aucune erreur. Résultat : [3, 5]
 
-double("5");
-// TypeError: Argument #1 ($x)
+intdiv('10', '3');
+// TypeError: Argument #1 ($num1)
 // must be of type int, string given
 </code></pre>
-            <p class="fragment"><code>array_map</code> (moteur C) ré-appelle <code>double</code> hors du scope du fichier — <code>strict_types</code> ne s'applique qu'aux appels <strong>écrits dans le fichier</strong>.</p>
-            <p class="fragment small-text">Même chose pour <code>array_filter</code>, <code>usort</code>, <code>preg_replace_callback</code>, <code>call_user_func</code>…</p>
+            <p class="fragment">La même fonction native : rejetée en appel direct, mais coercée en silence quand elle passe par <code>array_map</code>.</p>
+            <p class="fragment small-text">Même chose pour <code>array_filter</code>, <code>array_reduce</code>, <code>usort</code>… mais pas <code>call_user_func</code>, qui reste strict.</p>
         </section>
 
         <section>
