@@ -382,20 +382,26 @@ function processBooking(?Cinema $cinema): void {
 </code></pre>
         </section>
 
-        <section style="font-size: 0.95em;">
+        <section style="font-size: 0.85em;">
             <h2>Génériques (via PHPStan/Psalm)</h2>
             <p class="small-text">Pas dans le langage… mais dans les annotations.</p>
 <pre><code class="php" data-trim>
 /**
- * @template T of object
- * @param class-string&lt;T&gt; $class
- * @return T
+ * @template T
  */
-function instantiate(string $class): object {
-    return new $class();
+final readonly class TypedCollection {
+    /** @param list&lt;T&gt; $items */
+    public function __construct(private array $items) {}
+
+    /** @return T */
+    public function first(): mixed {
+        return $this->items[0];
+    }
 }
 
-$cinema = instantiate(Cinema::class); // inféré comme Cinema
+/** @var TypedCollection&lt;Showtime&gt; $showtimes */
+$showtimes = new TypedCollection($rawShowtimes);
+$showtimes->first(); // inféré comme Showtime, pas mixed
 </code></pre>
             <p class="fragment">PHPStan, Psalm et PhpStorm comprennent parfaitement.</p>
         </section>
