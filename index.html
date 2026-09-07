@@ -460,7 +460,7 @@ final readonly class ShowtimeList {
     }
 
     public function nextBookable(): ?Showtime {
-        return array_find($this->items, fn(Showtime $t) => $t->isBookable());
+        return array_find($this->items, static fn(Showtime $t) => $t->isBookable());
     }
 }
 </code></pre>
