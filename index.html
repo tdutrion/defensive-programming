@@ -454,13 +454,11 @@ final readonly class ShowtimeList {
     }
 
     public function nextBookable(): ?Showtime {
-        foreach ($this->items as $t) {
-            if ($t->isBookable()) return $t;
-        }
-        return null;
+        return array_find($this->items, fn(Showtime $t) => $t->isBookable());
     }
 }
 </code></pre>
+            <p class="fragment small-text"><code>array_find</code> (PHP 8.4) remplace le foreach manuel.</p>
         </section>
 
         <section style="font-size: 0.8em;">
