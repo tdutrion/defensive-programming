@@ -268,9 +268,8 @@ add("5", "10");
             <p class="fragment">En haut de <strong>chaque fichier</strong>. Sans exception.</p>
         </section>
 
-        <section style="font-size: 0.82em;">
+        <section>
             <h2>« Sans exception » : même les interfaces</h2>
-            <p class="small-text">Une interface n'a aucun corps de fonction — <code>strict_types</code> n'a littéralement rien à vérifier là-dedans.</p>
 <pre><code class="php" data-trim>
 declare(strict_types=1);
 
@@ -278,8 +277,7 @@ interface ShowRepository {
     public function getShow(ShowSlug $s): Show;
 }
 </code></pre>
-            <p class="fragment big-text">Et pourtant : mettez-le quand même.</p>
-            <p class="fragment">Une règle qui a des exceptions se juge fichier par fichier. Un poka-yoke, ça ne se discute pas — ça s'applique partout, même là où ça ne sert à rien.</p>
+            <p class="fragment big-text">Mettez-le quand même.</p>
         </section>
 
         <section style="font-size: 0.75em;">
