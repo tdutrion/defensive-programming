@@ -622,7 +622,8 @@ readonly class Cinema {
 </code></pre>
                 </div>
             </div>
-            <p class="fragment">Réassigner une propriété <code>readonly</code> dans <code>__clone()</code> est autorisé depuis PHP 8.3 — l'objet clone est encore en construction.</p>
+            <p class="fragment">Réassigner une propriété <code>readonly</code> dans <code>__clone()</code> est autorisé depuis PHP 8.3.</p>
+            <p class="fragment">https://github.com/myclabs/deepcopy</p>
         </section>
 
         <section>
@@ -680,7 +681,7 @@ var_dump($p->next24ShowtimesCount); // int(42)
         </section>
 
         <section style="font-size: 0.85em;">
-            <h2>Primitive obsession — un vrai piège</h2>
+            <h2>Primitive obsession : un vrai piège</h2>
             <p class="small-text">Deux slugs, deux <code>string</code>. Rien n'empêche de les inverser.</p>
             <div class="two-col">
                 <div>
@@ -709,6 +710,38 @@ getShowtimes($cinemaSlug, $showSlug);
                 </div>
             </div>
             <p class="fragment">Le compilateur refuse l'inversion. Plus de test à écrire pour ça.</p>
+        </section>
+
+        <section style="font-size: 0.76em;">
+            <h2>Un VO construit depuis la config</h2>
+            <div class="two-col">
+                <div>
+<pre><code class="php" data-trim>
+final readonly class RecordsPerPage {
+    public function __construct(
+        public int $value,
+    ) {
+        if ($value <= 0) {
+            throw new InvalidArgumentException(
+                "Doit être positif : {$value}"
+            );
+        }
+    }
+}
+</code></pre>
+                </div>
+                <div>
+<pre><code class="yaml" data-trim>
+# config/services.yaml
+services:
+  App\Domain\RecordsPerPage:
+    arguments:
+      $value: '%env(int:RECORDS_PER_PAGE)%'
+</code></pre>
+                </div>
+            </div>
+            <p class="fragment">Autowirable partout : <code>__construct(private RecordsPerPage $perPage)</code>.</p>
+            <p class="fragment small-text">Une <code>env</code> mal configurée plante au démarrage du conteneur — pas au milieu d'une pagination, en prod.</p>
         </section>
 
         <section style="font-size: 0.85em;">
