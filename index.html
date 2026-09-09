@@ -332,7 +332,7 @@ public function findShow(
             <div class="two-col">
                 <div>
                     <h3 style="text-align: center;">PHP 8.0<br><code>Union</code></h3>
-                    <p class="small-text">« Plusieurs types possibles », sans mentir.</p>
+                    <p class="small-text">L'un ou l'autre.</p>
 <pre><code class="php" data-trim>
 function formatId(int|string $id): string {
     return (string) $id;
@@ -342,7 +342,7 @@ function formatId(int|string $id): string {
                 </div>
                 <div>
                     <h3 style="text-align: center;">PHP 8.1<br><code>Intersection</code></h3>
-                    <p class="small-text">« Doit implémenter plusieurs interfaces ».</p>
+                    <p class="small-text">Les deux (ou plus).</p>
 <pre><code class="php" data-trim>
 function count(
     Countable&Iterator $items
@@ -357,16 +357,21 @@ function count(
             <h2>DNF types (PHP 8.2)</h2>
             <p class="small-text">Disjunctive Normal Form : combinaison d'unions et d'intersections.</p>
 <pre><code class="php" data-trim>
-function process(
-    (Countable&Iterator)|null $items,
-): void {
+function process(  (Countable&Iterator)|null $items  ): void
+{
     if ($items === null) {
         return;
     }
-    // Ici, $items est garanti Countable ET Iterator
+
+    if (count($items)) < 1) {
+        return;
+    }
+
+    foreach ($items as $item) {
+        // do something
+    }
 }
 </code></pre>
-            <p class="fragment">À lire littéralement : « (Countable ET Iterator) OU null ».</p>
         </section>
 
         <section>
@@ -385,6 +390,7 @@ function processBooking(?Cinema $cinema): void {
     $cinema->book(/* … */);
 }
 </code></pre>
+            <p class="fragment small-text">Ce qui rend une fonction éligible à <code>never</code> : <code>throw</code>, <code>exit</code>/<code>die</code>, une boucle infinie, ou l'appel d'une autre fonction <code>never</code>.</p>
         </section>
 
         <section style="font-size: 0.85em;">
