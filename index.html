@@ -378,19 +378,22 @@ function process(  (Countable&Iterator)|null $items  ): void
             <h2>Le type <code>never</code> (PHP 8.1)</h2>
             <p class="small-text">« Cette fonction ne rend jamais la main. »</p>
 <pre><code class="php" data-trim>
-function panic(string $message): never {
+function runtimeException(string $message): never {
     throw new RuntimeException($message);
 }
 
-function processBooking(?Cinema $cinema): void {
-    if ($cinema === null) {
-        panic('Cinéma introuvable');
+function infiniteLoop(): never {
+    while(true) {
+
     }
-    // PHPStan sait qu'ici $cinema n'est pas null
-    $cinema->book(/* … */);
+}
+
+// Fatal error: A never-returning function must not return
+function runtimeException(string $message): never {
+    return $message;
 }
 </code></pre>
-            <p class="fragment small-text">Ce qui rend une fonction éligible à <code>never</code> : <code>throw</code>, <code>exit</code>/<code>die</code>, une boucle infinie, ou l'appel d'une autre fonction <code>never</code>.</p>
+            <p class="fragment small-text"><code>never</code> = <code>throw</code>, <code>exit</code>/<code>die</code>, une boucle infinie.</p>
         </section>
 
         <section style="font-size: 0.85em;">
@@ -417,19 +420,22 @@ $showtimes->first(); // inféré comme Showtime, pas mixed
             <p class="fragment">PHPStan, Psalm et PhpStorm comprennent parfaitement.</p>
         </section>
 
-        <section style="font-size: 0.7em;">
+        <section style="font-size: 0.6em;">
             <h2>Cas pratique : la réponse qui change de forme</h2>
             <p class="small-text"><code>/show/{slug}/showtimes/{cinemaSlug}</code> renvoie un objet daté <strong>ou</strong> un tableau vide, selon les cas :</p>
             <div class="two-col">
                 <div>
                     <h3 class="bad">❌ Avant</h3>
 <pre><code class="php" data-trim>
-function getShowtimes($show, $cinema) {
-    $r = $this->http->get(/* … */);
-    if (is_array($r) && count($r) === 0) {
+function getShowtimes(
+    $show,
+    $cinema,
+): array {
+    $response = $this->http->get(/* … */);
+    if (is_array($response) && count($response) === 0) {
         return [];
     }
-    return $r; // object clé=date, ou {}
+    return $response; // object clé=date, ou {}
 }
 // L'appelant doit deviner la forme.
 </code></pre>
@@ -441,8 +447,8 @@ function getShowtimes(
     ShowSlug $show,
     CinemaSlug $cinema,
 ): ShowtimeList {
-    $r = $this->http->get(/* … */);
-    return ShowtimeList::fromApiResponse($r);
+    $response = $this->http->get(/* … */);
+    return ShowtimeList::fromApiResponse($response);
 }
 // Toujours un ShowtimeList. Point.
 </code></pre>
@@ -454,11 +460,17 @@ function getShowtimes(
         <section style="font-size: 0.75em;">
             <h2>Ce que <code>ShowtimeList</code> fait vraiment</h2>
 <pre><code class="php" data-trim>
-final readonly class ShowtimeList {
-    /** @param list&lt;Showtime&gt; $items */
-    private function __construct(private array $items) {}
+final readonly class ShowtimeList
+{
+    private array $items;
 
-    public static function fromApiResponse(array|object $raw): self {
+    private function __construct(Showtime ...$items)
+    {
+        $this->items = $items;
+    }
+
+    public static function fromApiResponse(array|object $raw): self
+    {
         // `[]` (rien de programmé) et `{date: [...]}` convergent ici :
         // (array) [] reste [], le foreach ne fait juste rien.
         $items = [];
@@ -467,11 +479,12 @@ final readonly class ShowtimeList {
                 $items[] = Showtime::fromApi($t);
             }
         }
-        return new self($items);
+        return new self(...$items);
     }
 
-    public function nextBookable(): ?Showtime {
-        return array_find($this->items, static fn(Showtime $t) => $t->isBookable());
+    public function nextBookable(): ?Showtime
+    {
+        return array_find($this->items, static fn(Showtime $time) => $time->isBookable());
     }
 }
 </code></pre>
@@ -574,6 +587,44 @@ readonly class Showtime {
 </code></pre>
         </section>
 
+        <section style="font-size: 0.75em;">
+            <h2><code>clone</code> : superficiel par défaut</h2>
+            <div class="two-col">
+                <div>
+                    <h3 class="bad">❌ Clone superficiel</h3>
+<pre><code class="php" data-trim>
+readonly class Cinema {
+    public function __construct(
+        public string $name,
+        public Coordinates $coords,
+    ) {}
+}
+
+$b = clone $a;
+$b->coords->lat = 99.0;
+// $a->coords->lat vaut aussi 99.0 :
+// même objet Coordinates, partagé
+</code></pre>
+                </div>
+                <div>
+                    <h3 class="good">✅ Deep clone</h3>
+<pre><code class="php" data-trim>
+readonly class Cinema {
+    public function __construct(
+        public string $name,
+        public Coordinates $coords,
+    ) {}
+
+    public function __clone(): void {
+        $this->coords = clone $this->coords;
+    }
+}
+</code></pre>
+                </div>
+            </div>
+            <p class="fragment">Réassigner une propriété <code>readonly</code> dans <code>__clone()</code> est autorisé depuis PHP 8.3 — l'objet clone est encore en construction.</p>
+        </section>
+
         <section>
             <h2>Visibilité asymétrique (PHP 8.4)</h2>
             <p class="small-text">Mutable en interne, mais immuable depuis l'extérieur.</p>
@@ -587,11 +638,12 @@ class CinemaProgramme {
 }
 
 $p = new CinemaProgramme();
-$p->next24ShowtimesCount = 42;
+// $p->next24ShowtimesCount = 42;
 // Error: visibilité asymétrique
 $p->refresh(42); // OK
+var_dump($p->next24ShowtimesCount); // int(42)
 </code></pre>
-            <p class="fragment small-text"><code>readonly</code> : jamais modifiable après construction. <code>private(set)</code> : modifiable, mais seulement depuis la classe.</p>
+            <p class="fragment small-text"><code>readonly</code> : jamais modifiable après construction.<br/><code>private(set)</code> : modifiable, mais seulement depuis la classe.</p>
         </section>
 
         <section>
