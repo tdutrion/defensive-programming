@@ -269,10 +269,14 @@ add("5", "10");
         </section>
 
         <section>
-            <h2>« Sans exception » : même les interfaces</h2>
+            <h2>« Sans exception » :<br>même les interfaces</h2>
 <pre><code class="php" data-trim>
+&lt;?php
+
 declare(strict_types=1);
-interface ShowRepository { /* … */ }
+
+interface ShowRepository
+{ /* … */ }
 </code></pre>
             <p class="fragment big-text">Mettez-le quand même.</p>
         </section>
@@ -291,8 +295,8 @@ intdiv('10', '3');
 // TypeError: Argument #1 ($num1)
 // must be of type int, string given
 </code></pre>
-            <p class="fragment">La même fonction native : rejetée en appel direct, mais coercée en silence quand elle passe par <code>array_map</code>.</p>
-            <p class="fragment small-text">Même chose pour <code>array_filter</code>, <code>array_reduce</code>, <code>usort</code>… mais pas <code>call_user_func</code>, qui reste strict.</p>
+            <p class="fragment"><code>array_map</code> est dans le core PHP, pas dans le fichier, donc la callback ne subit pas le <code>strict_types</code>.</p>
+            <p class="fragment small-text">Même chose pour <code>array_filter</code>, <code>array_reduce</code>, <code>usort</code>, <code>call_user_func</code>...</p>
         </section>
 
         <section>
@@ -320,13 +324,14 @@ public function findShow(
                 </div>
             </div>
             <p class="fragment">Le type de retour est <strong>de la documentation exécutable</strong>.</p>
+            <p class="fragment small-text">Convention <code>getX(): X</code> throws, <code>findX(): ?X</code> ?</p>
         </section>
 
         <section style="font-size: 0.85em;">
             <h2>Union &amp; intersection types</h2>
             <div class="two-col">
                 <div>
-                    <h3>Union (PHP 8.0)</h3>
+                    <h3 style="text-align: center;">PHP 8.0<br><code>Union</code></h3>
                     <p class="small-text">« Plusieurs types possibles », sans mentir.</p>
 <pre><code class="php" data-trim>
 function formatId(int|string $id): string {
@@ -336,7 +341,7 @@ function formatId(int|string $id): string {
                     <p class="fragment small-text">Si vous avez <code>A|B|C|D</code>, un Value Object remplace souvent l'union.</p>
                 </div>
                 <div>
-                    <h3>Intersection (PHP 8.1)</h3>
+                    <h3 style="text-align: center;">PHP 8.1<br><code>Intersection</code></h3>
                     <p class="small-text">« Doit implémenter plusieurs interfaces ».</p>
 <pre><code class="php" data-trim>
 function count(
