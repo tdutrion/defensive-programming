@@ -181,12 +181,11 @@
             <p class="section-meta">…ou : comment dire « non » poliment à ses callers</p>
         </section>
 
-        <section style="font-size: 0.78em;">
+        <section style="font-size: 0.88em;">
             <h2>Une définition, un contrat</h2>
             <p>La <strong>programmation défensive</strong> :<br>anticiper que tout ce qui peut mal se passer, se passera mal...<br>Et refuser les états invalides <strong>par construction</strong>.</p>
             <ul>
                 <li class="fragment">Chaque fonction est un <strong>contrat</strong> : pré-conditions, post-conditions, invariants</li>
-                <li class="fragment small-text"><code>divide()</code> (slide suivante) : pré-condition = <code>$a</code>/<code>$b</code> typés <code>float</code> ; post-condition = résultat garanti, ou exception</li>
                 <li class="fragment">Plus on encode ce contrat dans les <em>types</em>, moins il faut le vérifier à l'exécution</li>
                 <li class="fragment">C'est du <strong>poka-yoke</strong>, appliqué à une signature de fonction</li>
             </ul>
